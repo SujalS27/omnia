@@ -75,14 +75,12 @@ class VaultClient:  # pylint: disable=too-few-public-methods
         self,
         command: str,
         vault_path: str,
-        input_data: Optional[str] = None,
     ) -> str:
         """Run an ansible-vault command.
 
         Args:
             command: The vault command (view, encrypt, decrypt).
             vault_path: Path to the vault file.
-            input_data: Optional input data for stdin (passed to process stdin, not shell).
 
         Returns:
             Command output as string.
@@ -115,7 +113,6 @@ class VaultClient:  # pylint: disable=too-few-public-methods
                 cmd,
                 capture_output=True,
                 text=True,
-                input=input_data,
                 check=True,
                 timeout=30,
             )

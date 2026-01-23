@@ -96,7 +96,7 @@ class ClientRegistrationResponse(BaseModel):  # pylint: disable=too-few-public-m
             "examples": [
                 {
                     "client_id": "bld_<32_hex_characters>",
-                    "client_secret": "bld_s_<base64_url_safe_characters>",
+                    "client_secret": "********",
                     "client_name": "example-client-name",
                     "allowed_scopes": ["catalog:read", "catalog:write"],
                     "created_at": "2026-01-21T07:31:00Z",
