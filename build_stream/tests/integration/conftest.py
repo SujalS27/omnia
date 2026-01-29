@@ -17,15 +17,18 @@
 import base64
 import logging
 import os
+import secrets
 import shutil
 import signal
 import socket
+import string
 import subprocess
 import tempfile
 import time
 from pathlib import Path
 from typing import Dict, Generator, Optional
 
+import httpx
 import pytest
 import yaml
 from argon2 import PasswordHasher, Type
@@ -47,9 +50,6 @@ def generate_secure_test_password(length: int = 24) -> str:
     Returns:
         Secure random password
     """
-    import string
-    import secrets
-
     # Use stronger character set for integration tests
     lowercase = string.ascii_lowercase
     uppercase = string.ascii_uppercase
@@ -218,9 +218,9 @@ class ServerManager:
         self,
         host: str,
         port: int,
-        vault_manager: VaultManager,
-        project_dir: str,
-        venv_dir: str,
+        vault_manager: VaultManager,  # noqa: W0621
+        project_dir: str,  # noqa: W0621
+        venv_dir: str,  # noqa: W0621
     ):
         """Initialize server manager.
 
@@ -288,6 +288,7 @@ class ServerManager:
                     ["lsof", "-t", f"-i:{self.port}"],
                     capture_output=True,
                     text=True,
+                    check=False,
                 )
                 if result.stdout.strip():
                     for pid in result.stdout.strip().split("\n"):
@@ -328,7 +329,8 @@ class ServerManager:
         logger.info("    Python: %s", self.python_path)
         logger.info("    Working directory: %s", self.project_dir)
 
-        self.process = subprocess.Popen(
+        # Process needs to be managed separately for start/stop lifecycle
+        self.process = subprocess.Popen(  # noqa: R1732
             [
                 self.python_path,
                 "-m",
@@ -350,8 +352,6 @@ class ServerManager:
 
     def _wait_for_server(self) -> None:
         """Wait for server to be ready."""
-        import httpx
-
         logger.info("  Waiting for server to be ready (timeout: %ds)...",
                     IntegrationTestConfig.SERVER_STARTUP_TIMEOUT)
 
@@ -429,7 +429,10 @@ def integration_test_dir() -> Generator[str, None, None]:
 
 
 @pytest.fixture(scope="module")
-def vault_manager(integration_test_dir: str, auth_password: str) -> Generator[VaultManager, None, None]:  # noqa: W0621
+def vault_manager(
+    integration_test_dir: str,
+    auth_password: str,
+) -> Generator[VaultManager, None, None]:  # noqa: W0621
     """Create and configure vault manager.
 
     Args:
@@ -550,7 +553,10 @@ def invalid_auth_header() -> Dict[str, str]:
 
 
 @pytest.fixture
-def reset_vault(vault_manager: VaultManager, auth_password: str) -> Generator[None, None, None]:  # noqa: W0621
+def reset_vault(
+    vault_manager: VaultManager,
+    auth_password: str,
+) -> Generator[None, None, None]:  # noqa: W0621
     """Reset vault to initial state before and after test.
 
     Args:

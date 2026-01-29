@@ -87,7 +87,7 @@ def mock_vault_client():
 
 
 @pytest.fixture
-def mock_vault_with_client(mock_vault_client):
+def mock_vault_with_client(mock_vault_client):  # noqa: W0621
     """Create a MockVaultClient with an existing registered client.
 
     Args:
@@ -101,7 +101,7 @@ def mock_vault_with_client(mock_vault_client):
 
 
 @pytest.fixture
-def auth_service(mock_vault_client):
+def auth_service(mock_vault_client):  # noqa: W0621
     """Create an AuthService with mock vault client.
 
     Args:
@@ -110,8 +110,8 @@ def auth_service(mock_vault_client):
     Returns:
         AuthService configured with mock vault.
     """
-    AuthService = _get_auth_service()
-    return AuthService(vault_client=mock_vault_client)
+    auth_service_class = _get_auth_service()
+    return auth_service_class(vault_client=mock_vault_client)
 
 
 @pytest.fixture
@@ -176,8 +176,10 @@ def valid_auth_header() -> Dict[str, str]:
         Dictionary with Authorization header.
     """
     mock_vault_client_class = _get_mock_vault_client()
+    username = mock_vault_client_class.DEFAULT_TEST_USERNAME
+    password = mock_vault_client_class.DEFAULT_TEST_PASSWORD
     credentials = base64.b64encode(
-        f"{mock_vault_client_class.DEFAULT_TEST_USERNAME}:{mock_vault_client_class.DEFAULT_TEST_PASSWORD}".encode()
+        f"{username}:{password}".encode()
     ).decode()
     return {"Authorization": f"Basic {credentials}"}
 
