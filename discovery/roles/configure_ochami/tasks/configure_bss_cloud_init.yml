@@ -66,11 +66,6 @@
   register: read_ssh_key
   no_log: true
 
-- name: Set read_ssh_key as fact for template access
-  ansible.builtin.set_fact:
-    read_ssh_key: "{{ read_ssh_key }}"
-    cacheable: true
-
 - name: Hash the password
   ansible.builtin.command: openssl passwd -6 "{{ hostvars['localhost']['provision_password'] }}"
   changed_when: false

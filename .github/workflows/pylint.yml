@@ -10,6 +10,8 @@ on:
       - pub/ochami
       - pub/ochami_aarch64
       - pub/k8s_telemetry
+      - pub/ib_support
+      - pub/v2.1_rc1
 
 jobs:
   build:

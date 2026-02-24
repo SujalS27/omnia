@@ -32,6 +32,10 @@ image_missing_fail_msg: "Failed to set kernel or initrd. Create the image using 
 # Usage: configure_cloud_init_group.yml, configure_bss_cloud_init.yml
 default_file_path: "{{ playbook_dir }}/roles/slurm_config/defaults/main.yml"
 
+# Usage: configure_cloud_init_common.yml
+ci_group_common_template: cloud_init/ci-group-common.yaml.j2
+ci_group_common_dest: "{{ cloud_init_dir }}/ci-group-common.yaml"
+
 # Usage: discovery_completion.yml
 discovery_completion_msg: |
   The discovery.yml playbook has completed successfully.
@@ -52,7 +56,6 @@ ldap_starttls_port: 389
 ldap_ssl_port: 636
 
 # Usage: ci-group-slurm_control_node_x86_64.yaml.j2
-slurm_group_name: slurm
 home_dir: /var/lib/slurm
 user: slurm
 munge_user: munge
@@ -65,4 +68,3 @@ file_mode_600: "0600"
 file_mode: "0644"
 ip_timeout: 10
 ip_wait_loop: 60
-

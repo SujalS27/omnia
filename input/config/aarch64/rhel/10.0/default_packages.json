@@ -59,7 +59,7 @@
       {"package": "kexec-tools", "type": "rpm", "repo_name": "aarch64_baseos"},
       {"package": "which", "type": "rpm", "repo_name": "aarch64_baseos"},
       {"package": "iperf3", "type": "rpm", "repo_name": "aarch64_appstream"},
-      { "package": "docker.io/dellhpcomniaaisolution/image-build-aarch64", "tag": "1.0", "type": "image" }
+      { "package": "docker.io/dellhpcomniaaisolution/image-build-aarch64", "tag": "1.1", "type": "image" }
     ]
   }
 }
