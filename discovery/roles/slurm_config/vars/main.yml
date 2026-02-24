@@ -97,7 +97,6 @@ common_mode: "0755"
 slurm_dbd_mode: "0600"
 slurm_db_cnf_mode: "0600"
 openldap_dir_name: "openldap/"
-software_config_file: "{{ input_project_dir }}/software_config.json"
 omnia_run_tags: "{{ hostvars['localhost']['omnia_run_tags'] }}"
 auth_tls_certs_path: "/opt/omnia/auth/tls_certs/ldapserver.crt"
 slurm_installation_type: configless

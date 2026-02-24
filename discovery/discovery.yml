@@ -12,11 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ---
+- name: Load global input defaults
+  hosts: localhost
+  gather_facts: false
+  tags: always
+  tasks:
+    - ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/input_vars/global_input.yml"
+
 - name: Include input project directory
   when: not project_dir_status | default(false) | bool
   ansible.builtin.import_playbook: ../utils/include_input_dir.yml
   vars:
-    openchami_vars_suppport: true
+    openchami_vars_support: true
+    openchami_cloud_init_support: true
     omnia_metadata_support: true
 
 - name: Create oim group and provision group
@@ -97,15 +106,51 @@
 - name: Discover nodes, configure bss and cloud-init
   hosts: oim
   connection: ssh
-  pre_tasks:
-    - name: Discover nodes
-      ansible.builtin.include_role:
-        name: configure_ochami
-        tasks_from: discover_mapping_nodes.yml
   roles:
     - nfs_client
     - k8s_config
     - slurm_config
     - openldap
     - telemetry
-    - configure_ochami
+  tasks:
+    - name: Load input project data
+      ansible.builtin.include_role:
+        name: openchami_input_project
+      tags:
+        - input_project
+        - always
+
+    - name: Run OpenChami commands
+      ansible.builtin.include_role:
+        name: openchami_commands
+      tags:
+        - openchami_commands
+
+    - name: Create and manage SMD groups
+      ansible.builtin.include_role:
+        name: openchami_groups
+      tags:
+        - smd_groups
+
+    - name: Configure BSS boot parameters
+      ansible.builtin.include_role:
+        name: openchami_bss
+      tags:
+        - bss
+
+    - name: Configure cloud-init
+      ansible.builtin.include_role:
+        name: openchami_cloud_init
+      tags:
+        - cloud_init
+
+    - name: Discovery completion
+      ansible.builtin.include_role:
+        name: openchami_cloud_init
+        tasks_from: discovery_completion.yml
+      tags:
+        - openchami_commands
+        - smd_groups
+        - bss
+        - cloud_init
+        - input_project 

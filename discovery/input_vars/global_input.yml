@@ -1,0 +1,33 @@
+---
+# Shared input-directory globals for discovery and related playbooks
+# Base paths and project info
+omnia_input_dir: /opt/omnia/input
+project_name: project_default
+input_project_dir: "{{ omnia_input_dir }}/{{ project_name }}"
+omnia_input_config_file: "{{ omnia_input_dir }}/default.yml"  # point to actual master config if different
+omnia_metadata_file_path: "/opt/omnia/.data/oim_metadata.yml"
+
+#Input file paths (centralized for easy edits)
+omnia_config_file: "{{ input_project_dir }}/omnia_config.yml"
+provision_config_file: "{{ input_project_dir }}/provision_config.yml"
+network_spec_file: "{{ input_project_dir }}/network_spec.yml"
+storage_config_file: "{{ input_project_dir }}/storage_config.yml"
+security_config_file: "{{ input_project_dir }}/security_config.yml"
+telemetry_config_file: "{{ input_project_dir }}/telemetry_config.yml"
+software_config_file: "{{ input_project_dir }}/software_config.json"
+pxe_mapping_file_path: "{{ input_project_dir }}/pxe_mapping_file.csv"
+
+# Discovery input list (centralized)
+discovery_inputs:
+  - path: "{{ provision_config_file }}"
+  - path: "{{ network_spec_file }}"
+  - path: "{{ functional_groups_config_path | default('') }}"
+  - path: "{{ omnia_metadata_file_path }}"
+  - path: "{{ security_config_file }}"
+  - path: "{{ telemetry_config_file }}"
+  - path: "{{ storage_config_file }}"
+  - path: "{{ omnia_config_file }}"
+
+# Common error messages
+project_dir_not_exist_fail_msg: "Failed. Omnia project directory does not exist."
+omnia_input_config_syntax_fail_msg: "Failed. Syntax errors present in omnia input config file."

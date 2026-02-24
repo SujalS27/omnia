@@ -36,7 +36,7 @@
     mode: "{{ hostvars['localhost']['dir_permissions_755'] }}"
 
 - name: Delete ochami bss boot params
-  ansible.builtin.command: /usr/bin/ochami bss boot params delete --no-confirm -d '{"macs":["{{ item }}"]}'
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.bss_boot_params_delete }} -d '{\"macs\":[\"{{ item }}\"]}'"
   changed_when: false
   failed_when: false
   with_items: "{{ nodes | map(attribute='interfaces.0.mac_addr') | list }}"
@@ -46,7 +46,7 @@
   with_items: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
 
 - name: Verify boot params set
-  ansible.builtin.command: ochami bss boot params get -F yaml
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.bss_boot_params_get }}"
   changed_when: false
   register: boot_params_output
 
@@ -66,11 +66,21 @@
   register: read_ssh_key
   no_log: true
 
+- name: Set read_ssh_key as fact for template access
+  ansible.builtin.set_fact:
+    read_ssh_key: "{{ read_ssh_key }}"
+    cacheable: true
+
 - name: Hash the password
   ansible.builtin.command: openssl passwd -6 "{{ hostvars['localhost']['provision_password'] }}"
   changed_when: false
   register: hashed_password_output
   no_log: true
+
+- name: Set hashed_password_output as fact for template access
+  ansible.builtin.set_fact:
+    hashed_password_output: "{{ hashed_password_output }}"
+    cacheable: true
 
 - name: Load ci defaults template
   ansible.builtin.template:
@@ -79,11 +89,11 @@
     mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
 
 - name: Set ci defaults configuration
-  ansible.builtin.command: /usr/bin/ochami cloud-init defaults set -f yaml -d @{{ ci_defaults_dest }}
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_defaults_set }} @{{ ci_defaults_dest }}"
   changed_when: true
 
 - name: Verify ci defaults configuration
-  ansible.builtin.command: /usr/bin/ochami cloud-init defaults get -F json-pretty
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_defaults_get }}"
   changed_when: false
   register: ci_defaults_output
 

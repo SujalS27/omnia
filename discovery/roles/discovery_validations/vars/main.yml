@@ -13,21 +13,9 @@
 #  limitations under the License.
 ---
 
-# Usage: include_inputs.yml
-discovery_inputs:
-  - path: "{{ hostvars['localhost']['input_project_dir'] }}/provision_config.yml"
-  - path: "{{ hostvars['localhost']['input_project_dir'] }}/network_spec.yml"
-  - path: "{{ hostvars['localhost']['functional_groups_config_path'] }}"
-  - path: "/opt/omnia/.data/oim_metadata.yml"
-  - path: "{{ hostvars['localhost']['input_project_dir'] }}/security_config.yml"
-  - path: "{{ hostvars['localhost']['input_project_dir'] }}/telemetry_config.yml"
-  - path: "{{ hostvars['localhost']['input_project_dir'] }}/storage_config.yml"
-  - path: "{{ hostvars['localhost']['input_project_dir'] }}/omnia_config.yml"
-
 input_syntax_fail_msg: "Failed. Syntax errors present in {{ item.path }}. Fix errors and re-run playbook again."
 
 # Usage: include_software_config.yml
-software_config_file: "{{ hostvars['localhost']['input_project_dir'] }}/software_config.json"
 software_config_syntax_fail_msg: "Failed. Syntax errors present in software_config.json. Fix errors and re-run playbook again."
 
 # Usage: validate_mapping_mechanism.yml

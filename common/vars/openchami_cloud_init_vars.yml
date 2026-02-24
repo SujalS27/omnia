@@ -1,0 +1,53 @@
+# Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+
+# OpenChami Cloud-Init Global Variables
+# Centralized cloud-init paths, templates, and configurations for discovery and provisioning
+
+# Cloud-Init Directories
+ci_defaults_dest: "{{ cloud_init_dir }}/ci-defaults.yaml"
+ci_group_common_dest: "{{ cloud_init_dir }}/ci-group-common.yaml"
+
+# Cloud-Init Templates (shared across discovery)
+ci_defaults_template: cloud_init/ci-defaults.yaml.j2
+ci_group_common_template: cloud_init/ci-group-common.yaml.j2
+
+# Cloud-Init Common Groups (ssh, chrony)
+common_cloud_init_groups:
+  - ssh
+  - chrony
+
+# Cloud-Init Boot Parameters
+bss_params_cloud_init: 'ds=nocloud;s=http://{{ cluster_boot_ip }}:8081/cloud-init/'
+bss_params_opts: 'ip=dhcp rd.live.image rd.live.ram rd.neednet=1 rd.driver.blacklist=ccp,edac_core,power_meter,ahci,megaraid_sas modprobe.blacklist=ccp,edac_core,power_meter,ahci,megaraid_sas libata.force=1:disable,2:disable,3:disable,4:disable rd.luks=0 rd.md=0 rd.dm=0 console=tty0 console=ttyS0,115200 selinux=0 apparmor=0 ip6=off cloud-init=enabled'
+
+# Cloud-Init Error Messages
+ci_group_load_fail_msg: |
+  "Template loading failed. Ensure the template exists in the specified path and is compatible with the defined functional groups."
+
+# Cloud-Init SSH Configuration
+ssh_key_path: /root/.ssh/oim_rsa.pub
+slurm_control_ssh_patterns: []
+slurm_node_ssh_patterns: []
+
+# Cloud-Init NFS Paths for Slurm Nodes
+cloud_init_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] }}:{{ hostvars['localhost']['slurm_nfs_path'] | default('/mnt/share/omnia') }}"
+cloud_init_slurm_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] }}:{{ hostvars['localhost']['slurm_nfs_path'] | default('/mnt/share/omnia') }}"
+cloud_init_nfs_path_openldap: "{{ hostvars['localhost']['ldap_nfs_server'] | default(hostvars['localhost']['slurm_nfs_server']) }}:{{ hostvars['localhost']['ldap_nfs_path'] | default('/mnt/share/openldap') }}"
+trackfile_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] }}:{{ hostvars['localhost']['slurm_nfs_path'] | default('/mnt/share/omnia') }}/track"
+client_mount_path: "/mnt/ldms"
+
+# IP Name Mapping for Cloud-Init
+ip_name_map: "{{ hostvars['localhost']['read_mapping_file']['dict'] | default({}) }}"

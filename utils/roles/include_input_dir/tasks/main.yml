@@ -42,7 +42,15 @@
 
 - name: Include openchami vars
   ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_vars.yml"
-  when: openchami_vars_suppport | default(false)
+  when: openchami_vars_support | default(false)
+
+- name: Include openchami cloud-init vars
+  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_cloud_init_vars.yml"
+  when: openchami_cloud_init_support | default(false)
+
+- name: Include openchami commands
+  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
+  when: openchami_vars_support | default(false)
 
 - name: Include oim metadata vars
   ansible.builtin.include_vars: "{{ omnia_metadata_file_path }}"

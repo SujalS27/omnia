@@ -13,19 +13,58 @@
 # limitations under the License.
 ---
 
+- name: Include openchami vars (oim scope)
+  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_vars.yml"
+  tags:
+    - openchami_commands
+    - smd_groups
+    - bss
+    - cloud_init
+    - input_project
+
+- name: Include openchami cloud-init vars
+  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_cloud_init_vars.yml"
+  tags:
+    - cloud_init
+    - bss
+    - smd_groups
+
+- name: Include openchami commands (rendered)
+  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
+  tags:
+    - openchami_commands
+    - smd_groups
+    - bss
+    - cloud_init
+
 - name: Configure the ochami
   environment: "{{ hostvars['oim']['ochami_env'] }}"
   block:
     - name: Create groups
       ansible.builtin.include_tasks: create_groups.yml
       with_items: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
+      tags:
+        - smd_groups
+        - openchami_commands
 
     - name: Create groups common
       ansible.builtin.include_tasks: create_groups_common.yml
       loop: "{{ common_cloud_init_groups }}"
+      tags:
+        - cloud_init
+        - smd_groups
 
     - name: Configure bss and cloud-init
       ansible.builtin.include_tasks: configure_bss_cloud_init.yml
+      tags:
+        - bss
+        - cloud_init
 
     - name: Discovery completion
       ansible.builtin.include_tasks: discovery_completion.yml
+      tags:
+        - openchami_commands
+        - smd_groups
+        - bss
+        - cloud_init
+        - input_project

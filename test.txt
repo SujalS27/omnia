@@ -1,0 +1,1656 @@
+
+[root@omnia_core discovery]# ansible-playbook discovery.yml
+[WARNING]: No inventory was parsed, only implicit localhost is available
+[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
+
+PLAY [Load global input defaults] *************************************************************************************************
+
+TASK [ansible.builtin.include_vars] ***********************************************************************************************
+ok: [localhost]
+
+PLAY [Include input directory] ****************************************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Include omnia project config file] **********************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Set input_project_dir] **********************************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Verify the project directory exists] ********************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Fail if project directory does not exist] ***************************************************************
+skipping: [localhost]
+
+TASK [include_input_dir : Include common vars] ************************************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Include openchami cloud-init vars] **********************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Include openchami commands] *****************************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Include openchami vars] *********************************************************************************
+skipping: [localhost]
+
+TASK [include_input_dir : Include oim metadata vars] ******************************************************************************
+ok: [localhost]
+
+PLAY [Create container group] *****************************************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************
+ok: [localhost]
+
+TASK [create_container_group : Create oim group] **********************************************************************************
+[WARNING]: Found both group and host with same name: oim
+changed: [localhost]
+
+PLAY [Include input directory] ****************************************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************
+ok: [localhost]
+
+TASK [generate_functional_groups : Include vars from provision_config.yml] ********************************************************
+ok: [localhost]
+
+TASK [generate_functional_groups : Set fact for functional groups file path] ******************************************************
+ok: [localhost]
+
+TASK [generate_functional_groups : Generate functional groups from mapping.csv] ***************************************************
+changed: [localhost]
+
+TASK [generate_functional_groups : Check the functional_groups_config.yml file is created in /opt/omnia/.data] ********************
+ok: [localhost]
+
+TASK [generate_functional_groups : Fail if functional groups file is not created] *************************************************
+skipping: [localhost]
+
+PLAY [Set_fact for fetch omnia config credentials] ********************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************
+ok: [localhost]
+
+TASK [Set dynamic run tags including 'provision'] *********************************************************************************
+ok: [localhost]
+
+PLAY [Include input directory] ****************************************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Include omnia project config file] **********************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Set input_project_dir] **********************************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Verify the project directory exists] ********************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Fail if project directory does not exist] ***************************************************************
+skipping: [localhost]
+
+TASK [include_input_dir : Include common vars] ************************************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Include openchami cloud-init vars] **********************************************************************
+skipping: [localhost]
+
+TASK [include_input_dir : Include openchami commands] *****************************************************************************
+skipping: [localhost]
+
+TASK [include_input_dir : Include openchami vars] *********************************************************************************
+skipping: [localhost]
+
+TASK [include_input_dir : Include oim metadata vars] ******************************************************************************
+skipping: [localhost]
+
+PLAY [Validate omnia input config] ************************************************************************************************
+
+TASK [validate_input : Initialize list of tags] ***********************************************************************************
+skipping: [localhost]
+
+TASK [validate_input : Validate omnia input config] *******************************************************************************
+ok: [localhost]
+
+TASK [validate_input : Debug validation status] ***********************************************************************************
+ok: [localhost] => {
+    "msg": "Successfully validated Omnia input config file(s)"
+}
+
+PLAY [Include input directory] ****************************************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Include omnia project config file] **********************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Set input_project_dir] **********************************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Verify the project directory exists] ********************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Fail if project directory does not exist] ***************************************************************
+skipping: [localhost]
+
+TASK [include_input_dir : Include common vars] ************************************************************************************
+ok: [localhost]
+
+TASK [include_input_dir : Include openchami cloud-init vars] **********************************************************************
+skipping: [localhost]
+
+TASK [include_input_dir : Include openchami commands] *****************************************************************************
+skipping: [localhost]
+
+TASK [include_input_dir : Include openchami vars] *********************************************************************************
+skipping: [localhost]
+
+TASK [include_input_dir : Include oim metadata vars] ******************************************************************************
+skipping: [localhost]
+
+PLAY [Include validation include_tasks] *******************************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************
+ok: [localhost]
+
+TASK [validation : Initialize list of tags] ***************************************************************************************
+skipping: [localhost]
+
+TASK [validation : Validate if Omnia Credential file exists] **********************************************************************
+included: /omnia/utils/credential_utility/roles/validation/tasks/validate_omnia_credential_file.yml for localhost
+
+TASK [validation : Initialize Omnia Credential file status] ***********************************************************************
+ok: [localhost]
+
+TASK [validation : Check if omnia_credential_file exists] *************************************************************************
+ok: [localhost]
+
+TASK [validation : Set status based on file existence] ****************************************************************************
+ok: [localhost]
+
+TASK [validation : Include pre_requisite.yml] *************************************************************************************
+included: /omnia/utils/credential_utility/roles/validation/tasks/pre_requisite.yml for localhost
+
+TASK [validation : Check omnia_credentials.yml file is encrypted] *****************************************************************
+ok: [localhost]
+
+TASK [validation : Decrpyt omnia_credentials.yml] *********************************************************************************
+ok: [localhost]
+
+TASK [validation : Include omnia_credentials.yml] *********************************************************************************
+ok: [localhost]
+
+TASK [validation : Create ansible vault key] **************************************************************************************
+skipping: [localhost]
+
+TASK [validation : Save vault key to omnia_credential_vault_path] *****************************************************************
+skipping: [localhost]
+
+TASK [validation : Load software_config.json as user_config] **********************************************************************
+ok: [localhost]
+
+TASK [validation : Generate software JSON file names] *****************************************************************************
+ok: [localhost]
+
+TASK [validation : Fetch telemetry status from telemetry_config.yml] **************************************************************
+ok: [localhost]
+
+TASK [validation : Set run tags for telemetry] ************************************************************************************
+skipping: [localhost]
+
+PLAY [Create omnia_credential_config] *********************************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************
+ok: [localhost]
+
+TASK [create_config : Create Omnia Credentials file] ******************************************************************************
+skipping: [localhost]
+
+TASK [create_config : Include omnia_credentials.yml] ******************************************************************************
+skipping: [localhost]
+
+PLAY [Fetch and update credentials in config file] ********************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************
+ok: [localhost]
+
+TASK [update_config : Set common library path] ************************************************************************************
+ok: [localhost]
+
+TASK [update_config : Fetch omnia credentials] ************************************************************************************
+included: /omnia/utils/credential_utility/roles/update_config/tasks/fetch_credentials.yml for localhost => (item={'key': 'provision', 'value': {'mandatory': [{'password': 'provision_password'}, {'username': 'bmc_username', 'password': 'bmc_password'}]}})
+included: /omnia/utils/credential_utility/roles/update_config/tasks/fetch_credentials.yml for localhost => (item={'key': 'prepare_oim', 'value': {'optional': [{'username': 'docker_username', 'password': 'docker_password'}], 'mandatory': [{'password': 'pulp_password'}, {'password': 'minio_s3_password'}]}})
+included: /omnia/utils/credential_utility/roles/update_config/tasks/fetch_credentials.yml for localhost => (item={'key': 'local_repo', 'value': {'optional': [{'username': 'docker_username', 'password': 'docker_password'}]}})
+included: /omnia/utils/credential_utility/roles/update_config/tasks/fetch_credentials.yml for localhost => (item={'key': 'slurm', 'value': {'mandatory': [{'password': 'slurm_db_password'}]}})
+included: /omnia/utils/credential_utility/roles/update_config/tasks/fetch_credentials.yml for localhost => (item={'key': 'slurm_custom', 'value': {'mandatory': [{'password': 'slurm_db_password'}]}})
+included: /omnia/utils/credential_utility/roles/update_config/tasks/fetch_credentials.yml for localhost => (item={'key': 'openldap', 'value': {'mandatory': [{'username': 'openldap_db_username', 'password': 'openldap_db_password'}, {'username': 'openldap_config_username', 'password': 'openldap_config_password'}, {'password': 'openldap_monitor_password'}]}})
+included: /omnia/utils/credential_utility/roles/update_config/tasks/fetch_credentials.yml for localhost => (item={'key': 'idrac_telemetry', 'value': {'mandatory': [{'username': 'bmc_username', 'password': 'bmc_password'}, {'username': 'mysqldb_user', 'password': 'mysqldb_password'}, {'password': 'mysqldb_root_password'}]}})
+included: /omnia/utils/credential_utility/roles/update_config/tasks/fetch_credentials.yml for localhost => (item={'key': 'csi_driver_powerscale', 'value': {'mandatory': [{'username': 'csi_username', 'password': 'csi_password'}]}})
+included: /omnia/utils/credential_utility/roles/update_config/tasks/fetch_credentials.yml for localhost => (item={'key': 'build_aarch_image', 'value': {'mandatory': [{'password': 'provision_password'}]}})
+included: /omnia/utils/credential_utility/roles/update_config/tasks/fetch_credentials.yml for localhost => (item={'key': 'ldms', 'value': {'mandatory': [{'password': 'ldms_sampler_password'}]}})
+
+TASK [update_config : Initialize credentials status] ******************************************************************************
+ok: [localhost]
+
+TASK [update_config : Prompt to fetch Omnia credentials] **************************************************************************
+included: /omnia/utils/credential_utility/roles/update_config/tasks/fetch_mandatory_credentials.yml for localhost => (item={'key': 'mandatory', 'value': [{'password': 'provision_password'}, {'username': 'bmc_username', 'password': 'bmc_password'}]})
+
+TASK [update_config : Set mandatory credentials status] ***************************************************************************
+ok: [localhost]
+
+TASK [update_config : Notify user about mandatory inputs] *************************************************************************
+ok: [localhost] => {
+    "msg": "WARNING: The following are mandatory credentials and cannot be left them empty. Please enter valid inputs."
+}
+
+TASK [update_config : Fetch mandatory credentials] ********************************************************************************
+included: /omnia/utils/credential_utility/roles/update_config/tasks/prompt_credentials.yml for localhost => (item={'password': 'provision_password'})
+included: /omnia/utils/credential_utility/roles/update_config/tasks/prompt_credentials.yml for localhost => (item={'username': 'bmc_username', 'password': 'bmc_password'})
+
+TASK [update_config : Initialize username status] *********************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Initialize password status] *********************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Fetch credential rule for "Username"] ***********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Show Docker Hub usage warning] ******************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Prompt user for "Username"] *********************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Validate mandatory username not empty] **********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Set username status when username is empty for OPTIONAL credential] *****************************************
+skipping: [localhost]
+
+TASK [update_config : Validate input credential - "Username"] *********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Fetch credential rule for "provision_password"] *************************************************************
+skipping: [localhost]
+
+TASK [update_config : Prompt user for "provision_password"] ***********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Validate mandatory password not empty] **********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Validate input credential - "provision_password"] ***********************************************************
+skipping: [localhost]
+
+TASK [update_config : Prompt user to confirm "provision_password"] ****************************************************************
+skipping: [localhost]
+
+TASK [update_config : Ensure passwords match] *************************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Set username status when username is empty for OPTIONAL credential] *****************************************
+skipping: [localhost]
+
+TASK [update_config : Update vars file with entered username] *********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Update vars file with entered password] *********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Include updated omnia_credentials.yml] **********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Reset credentials status] ***********************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Initialize username status] *********************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Initialize password status] *********************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Fetch credential rule for "bmc_username"] *******************************************************************
+skipping: [localhost]
+
+TASK [update_config : Show Docker Hub usage warning] ******************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Prompt user for "bmc_username"] *****************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Validate mandatory username not empty] **********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Set username status when username is empty for OPTIONAL credential] *****************************************
+skipping: [localhost]
+
+TASK [update_config : Validate input credential - "bmc_username"] *****************************************************************
+skipping: [localhost]
+
+TASK [update_config : Fetch credential rule for "bmc_password"] *******************************************************************
+skipping: [localhost]
+
+TASK [update_config : Prompt user for "bmc_password"] *****************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Validate mandatory password not empty] **********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Validate input credential - "bmc_password"] *****************************************************************
+skipping: [localhost]
+
+TASK [update_config : Prompt user to confirm "bmc_password"] **********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Ensure passwords match] *************************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Set username status when username is empty for OPTIONAL credential] *****************************************
+skipping: [localhost]
+
+TASK [update_config : Update vars file with entered username] *********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Update vars file with entered password] *********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Include updated omnia_credentials.yml] **********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Reset credentials status] ***********************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Reset mandatory credentials status] *************************************************************************
+ok: [localhost]
+
+TASK [update_config : Initialize credentials status] ******************************************************************************
+ok: [localhost]
+
+TASK [update_config : Prompt to fetch Omnia credentials] **************************************************************************
+skipping: [localhost] => (item={'key': 'optional', 'value': [{'username': 'docker_username', 'password': 'docker_password'}]})
+skipping: [localhost] => (item={'key': 'mandatory', 'value': [{'password': 'pulp_password'}, {'password': 'minio_s3_password'}]})
+skipping: [localhost]
+
+TASK [update_config : Initialize credentials status] ******************************************************************************
+ok: [localhost]
+
+TASK [update_config : Prompt to fetch Omnia credentials] **************************************************************************
+skipping: [localhost] => (item={'key': 'optional', 'value': [{'username': 'docker_username', 'password': 'docker_password'}]})
+skipping: [localhost]
+
+TASK [update_config : Initialize credentials status] ******************************************************************************
+ok: [localhost]
+
+TASK [update_config : Prompt to fetch Omnia credentials] **************************************************************************
+skipping: [localhost] => (item={'key': 'mandatory', 'value': [{'password': 'slurm_db_password'}]})
+skipping: [localhost]
+
+TASK [update_config : Initialize credentials status] ******************************************************************************
+ok: [localhost]
+
+TASK [update_config : Prompt to fetch Omnia credentials] **************************************************************************
+included: /omnia/utils/credential_utility/roles/update_config/tasks/fetch_mandatory_credentials.yml for localhost => (item={'key': 'mandatory', 'value': [{'password': 'slurm_db_password'}]})
+
+TASK [update_config : Set mandatory credentials status] ***************************************************************************
+ok: [localhost]
+
+TASK [update_config : Notify user about mandatory inputs] *************************************************************************
+ok: [localhost] => {
+    "msg": "WARNING: The following are mandatory credentials and cannot be left them empty. Please enter valid inputs."
+}
+
+TASK [update_config : Fetch mandatory credentials] ********************************************************************************
+included: /omnia/utils/credential_utility/roles/update_config/tasks/prompt_credentials.yml for localhost => (item={'password': 'slurm_db_password'})
+
+TASK [update_config : Initialize username status] *********************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Initialize password status] *********************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Fetch credential rule for "Username"] ***********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Show Docker Hub usage warning] ******************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Prompt user for "Username"] *********************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Validate mandatory username not empty] **********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Set username status when username is empty for OPTIONAL credential] *****************************************
+skipping: [localhost]
+
+TASK [update_config : Validate input credential - "Username"] *********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Fetch credential rule for "slurm_db_password"] **************************************************************
+skipping: [localhost]
+
+TASK [update_config : Prompt user for "slurm_db_password"] ************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Validate mandatory password not empty] **********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Validate input credential - "slurm_db_password"] ************************************************************
+skipping: [localhost]
+
+TASK [update_config : Prompt user to confirm "slurm_db_password"] *****************************************************************
+skipping: [localhost]
+
+TASK [update_config : Ensure passwords match] *************************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Set username status when username is empty for OPTIONAL credential] *****************************************
+skipping: [localhost]
+
+TASK [update_config : Update vars file with entered username] *********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Update vars file with entered password] *********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Include updated omnia_credentials.yml] **********************************************************************
+skipping: [localhost]
+
+TASK [update_config : Reset credentials status] ***********************************************************************************
+skipping: [localhost]
+
+TASK [update_config : Reset mandatory credentials status] *************************************************************************
+ok: [localhost]
+
+TASK [update_config : Initialize credentials status] ******************************************************************************
+ok: [localhost]
+
+TASK [update_config : Prompt to fetch Omnia credentials] **************************************************************************
+skipping: [localhost] => (item={'key': 'mandatory', 'value': [{'username': 'openldap_db_username', 'password': 'openldap_db_password'}, {'username': 'openldap_config_username', 'password': 'openldap_config_password'}, {'password': 'openldap_monitor_password'}]})
+skipping: [localhost]
+
+TASK [update_config : Initialize credentials status] ******************************************************************************
+ok: [localhost]
+
+TASK [update_config : Prompt to fetch Omnia credentials] **************************************************************************
+skipping: [localhost] => (item={'key': 'mandatory', 'value': [{'username': 'bmc_username', 'password': 'bmc_password'}, {'username': 'mysqldb_user', 'password': 'mysqldb_password'}, {'password': 'mysqldb_root_password'}]})
+skipping: [localhost]
+
+TASK [update_config : Initialize credentials status] ******************************************************************************
+ok: [localhost]
+
+TASK [update_config : Prompt to fetch Omnia credentials] **************************************************************************
+skipping: [localhost] => (item={'key': 'mandatory', 'value': [{'username': 'csi_username', 'password': 'csi_password'}]})
+skipping: [localhost]
+
+TASK [update_config : Initialize credentials status] ******************************************************************************
+ok: [localhost]
+
+TASK [update_config : Prompt to fetch Omnia credentials] **************************************************************************
+skipping: [localhost] => (item={'key': 'mandatory', 'value': [{'password': 'provision_password'}]})
+skipping: [localhost]
+
+TASK [update_config : Initialize credentials status] ******************************************************************************
+ok: [localhost]
+
+TASK [update_config : Prompt to fetch Omnia credentials] **************************************************************************
+skipping: [localhost] => (item={'key': 'mandatory', 'value': [{'password': 'ldms_sampler_password'}]})
+skipping: [localhost]
+
+TASK [update_config : Include updated credentials] ********************************************************************************
+ok: [localhost]
+
+TASK [update_config : Encrypt omnia credentials config] ***************************************************************************
+included: /omnia/utils/credential_utility/roles/update_config/tasks/encrypt_credentials_file.yml for localhost
+
+TASK [update_config : Encrypt omnia_config_credentials.yml] ***********************************************************************
+ok: [localhost]
+
+PLAY [Validate discovery parameters] **********************************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Set_fact for omnia_config_credentials.yml variables] ************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Include discovery inputs] ***************************************************************************
+included: /omnia/discovery/roles/discovery_validations/tasks/include_inputs.yml for localhost => (item={'path': '/opt/omnia/input/project_default/provision_config.yml'})
+included: /omnia/discovery/roles/discovery_validations/tasks/include_inputs.yml for localhost => (item={'path': '/opt/omnia/input/project_default/network_spec.yml'})
+included: /omnia/discovery/roles/discovery_validations/tasks/include_inputs.yml for localhost => (item={'path': '/opt/omnia/.data/functional_groups_config.yml'})
+included: /omnia/discovery/roles/discovery_validations/tasks/include_inputs.yml for localhost => (item={'path': '/opt/omnia/.data/oim_metadata.yml'})
+included: /omnia/discovery/roles/discovery_validations/tasks/include_inputs.yml for localhost => (item={'path': '/opt/omnia/input/project_default/security_config.yml'})
+included: /omnia/discovery/roles/discovery_validations/tasks/include_inputs.yml for localhost => (item={'path': '/opt/omnia/input/project_default/telemetry_config.yml'})
+included: /omnia/discovery/roles/discovery_validations/tasks/include_inputs.yml for localhost => (item={'path': '/opt/omnia/input/project_default/storage_config.yml'})
+included: /omnia/discovery/roles/discovery_validations/tasks/include_inputs.yml for localhost => (item={'path': '/opt/omnia/input/project_default/omnia_config.yml'})
+
+TASK [discovery_validations : Include /opt/omnia/input/project_default/provision_config.yml] **************************************
+ok: [localhost]
+
+TASK [discovery_validations : Include /opt/omnia/input/project_default/network_spec.yml] ******************************************
+ok: [localhost]
+
+TASK [discovery_validations : Include /opt/omnia/.data/functional_groups_config.yml] **********************************************
+ok: [localhost]
+
+TASK [discovery_validations : Include /opt/omnia/.data/oim_metadata.yml] **********************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Include /opt/omnia/input/project_default/security_config.yml] ***************************************
+ok: [localhost]
+
+TASK [discovery_validations : Include /opt/omnia/input/project_default/telemetry_config.yml] **************************************
+ok: [localhost]
+
+TASK [discovery_validations : Include /opt/omnia/input/project_default/storage_config.yml] ****************************************
+ok: [localhost]
+
+TASK [discovery_validations : Include /opt/omnia/input/project_default/omnia_config.yml] ******************************************
+ok: [localhost]
+
+TASK [discovery_validations : Include software config] ****************************************************************************
+included: /omnia/discovery/roles/discovery_validations/tasks/include_software_config.yml for localhost
+
+TASK [discovery_validations : Load software_config.json as software_config] *******************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Set facts for cluster] ******************************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Parse network_spec data] ****************************************************************************
+ok: [localhost] => (item={'key': 'admin_network', 'value': {'oim_nic_name': 'ens34', 'netmask_bits': '24', 'primary_oim_admin_ip': '182.12.0.250', 'primary_oim_bmc_ip': '', 'dynamic_range': '182.12.0.230-182.12.0.249', 'dns': [], 'ntp_servers': []}})
+ok: [localhost] => (item={'key': 'ib_network', 'value': {'subnet': '192.168.0.0', 'netmask_bits': '24'}})
+
+TASK [discovery_validations : Set admin network nic and ip] ***********************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Initialise variables] *******************************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Check if service k8s support is true] ***************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Extract k8s version] ********************************************************************************
+skipping: [localhost]
+
+TASK [discovery_validations : Check if csi support is true] ***********************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Initialise openldap support variables] **************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Check if openldap support is true] ******************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Initialise ucx support variables] *******************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Check if ucx support is true] ***********************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Initialise openmpi support variables] ***************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Check if openmpi support is true] *******************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Initialise ldms support variables] ******************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Check if ldms support is true] **********************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Check if discovery mechanism is mapping] ************************************************************
+included: /omnia/discovery/roles/discovery_validations/tasks/validate_mapping_mechanism.yml for localhost
+
+TASK [discovery_validations : Initialize variable] ********************************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Check that the pxe mapping file path exists] ********************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Fail if pxe mapping file path does not exist] *******************************************************
+skipping: [localhost]
+
+TASK [discovery_validations : Set discovery_mech_mapping to true] *****************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Validate mapping file] ******************************************************************************
+included: /omnia/discovery/roles/discovery_validations/tasks/validate_mapping_file.yml for localhost
+
+TASK [discovery_validations : Delete temp_mapping_file] ***************************************************************************
+changed: [localhost]
+
+TASK [discovery_validations : Remove leading/trailing spaces and tabs from the mapping file (but preserve column structure)] ******
+ok: [localhost]
+
+TASK [discovery_validations : Find and Replace] ***********************************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Read mapping file] **********************************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Replace only the first occurrence (Jinja split+join)] ***********************************************
+ok: [localhost]
+
+TASK [discovery_validations : Write updated mapping file back to disk] ************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Generate xnames in temporary mapping file] **********************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Read host mapping file from CSV file and return a dictionary] ***************************************
+ok: [localhost]
+
+TASK [discovery_validations : Initialize count variables] *************************************************************************
+ok: [localhost]
+
+TASK [discovery_validations : Create list of hostnames defined in mapping file] ***************************************************
+ok: [localhost] => (item=00:0c:29:19:6a:5b)
+ok: [localhost] => (item=aa:bb:cc:dd:ee:ff)
+
+TASK [discovery_validations : Assert hostnames] ***********************************************************************************
+ok: [localhost] => (item=slurm-node1)
+ok: [localhost] => (item=slurm-control-node1)
+
+TASK [discovery_validations : Validate capital case in hostname] ******************************************************************
+ok: [localhost] => (item=slurm-node1) => {
+    "ansible_loop_var": "item",
+    "changed": false,
+    "item": "slurm-node1",
+    "msg": "All assertions passed"
+}
+ok: [localhost] => (item=slurm-control-node1) => {
+    "ansible_loop_var": "item",
+    "changed": false,
+    "item": "slurm-control-node1",
+    "msg": "All assertions passed"
+}
+
+TASK [discovery_validations : Update hosts file] **********************************************************************************
+included: /omnia/discovery/roles/discovery_validations/tasks/update_hosts.yml for localhost
+
+TASK [discovery_validations : Add hosts file entry for cluster] *******************************************************************
+changed: [localhost] => (item={'key': '00:0c:29:19:6a:5b', 'value': {'FUNCTIONAL_GROUP_NAME': 'slurm_control_node_x86_64', 'GROUP_NAME': 'grp0', 'SERVICE_TAG': 'ABCD12', 'PARENT_SERVICE_TAG': '', 'HOSTNAME': 'slurm-control-node1', 'ADMIN_MAC': '00:0c:29:19:6a:5b', 'ADMIN_IP': '182.12.0.33', 'BMC_MAC': 'b0:7b:25:df:66:17', 'BMC_IP': '100.13.0.22', 'XNAME': 'x1000c0s0b0n0'}})
+changed: [localhost] => (item={'key': 'aa:bb:cc:dd:ee:ff', 'value': {'FUNCTIONAL_GROUP_NAME': 'slurm_node_x86_64', 'GROUP_NAME': 'grp1', 'SERVICE_TAG': 'ABCD34', 'PARENT_SERVICE_TAG': 'ABFL82', 'HOSTNAME': 'slurm-node1', 'ADMIN_MAC': 'aa:bb:cc:dd:ee:ff', 'ADMIN_IP': '182.12.0.55', 'BMC_MAC': 'aa:bb:cc:dd:ee:ff', 'BMC_IP': '100.13.0.43', 'XNAME': 'x1000c0s0b1n0'}})
+
+TASK [discovery_validations : Ensure 127.0.0.1 localhost entry exists uniquely using echo] ****************************************
+changed: [localhost]
+
+TASK [discovery_validations : Validate telemetry config] **************************************************************************
+skipping: [localhost]
+
+PLAY [Validate OIM timezone] ******************************************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************
+ok: [oim]
+
+TASK [Validate OIM timezone has not changed] **************************************************************************************
+
+TASK [discovery_validations : Get current OIM timezone] ***************************************************************************
+ok: [oim]
+
+TASK [discovery_validations : Read OIM metadata file] *****************************************************************************
+ok: [oim]
+
+TASK [discovery_validations : Parse OIM metadata YAML] ****************************************************************************
+ok: [oim]
+
+TASK [discovery_validations : Extract stored and current OIM timezone] ************************************************************
+ok: [oim]
+
+TASK [discovery_validations : Warn if OIM timezone changed after omnia_core deployment] *******************************************
+skipping: [oim]
+
+TASK [discovery_validations : Update OIM metadata timezone if changed] ************************************************************
+skipping: [oim]
+
+TASK [discovery_validations : Update OIM metadata vars] ***************************************************************************
+ok: [oim]
+
+PLAY [Validate discovery parameters] **********************************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************
+ok: [oim]
+
+TASK [Image validation] ***********************************************************************************************************
+
+TASK [discovery_validations : Set the functional_group_name] **********************************************************************
+ok: [oim]
+
+TASK [discovery_validations : Verify image, kernel and initramfs in S3] ***********************************************************
+ok: [oim]
+
+TASK [discovery_validations : Verify s3 image output] *****************************************************************************
+skipping: [oim]
+
+TASK [discovery_validations : Initialize kernel and initrd] ***********************************************************************
+ok: [oim]
+
+TASK [discovery_validations : Set kernel and initrd variables] ********************************************************************
+ok: [oim]
+
+TASK [discovery_validations : Fail if kernel or initrd length less than 1] ********************************************************
+skipping: [oim]
+
+TASK [discovery_validations : Set the functional_group_name] **********************************************************************
+ok: [oim]
+
+TASK [discovery_validations : Verify image, kernel and initramfs in S3] ***********************************************************
+ok: [oim]
+
+TASK [discovery_validations : Verify s3 image output] *****************************************************************************
+skipping: [oim]
+
+TASK [discovery_validations : Initialize kernel and initrd] ***********************************************************************
+ok: [oim]
+
+TASK [discovery_validations : Set kernel and initrd variables] ********************************************************************
+ok: [oim]
+
+TASK [discovery_validations : Fail if kernel or initrd length less than 1] ********************************************************
+skipping: [oim]
+
+PLAY [Configure auth for openchami] ***********************************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************
+ok: [oim]
+
+TASK [Openchami cluster authentication] *******************************************************************************************
+included: /omnia/common/tasks/common/openchami_auth.yml for oim
+
+TASK [Include openchami vars variables] *******************************************************************************************
+ok: [oim]
+
+TASK [Gather facts for services] **************************************************************************************************
+ok: [oim]
+
+TASK [Generate access token] ******************************************************************************************************
+ok: [oim]
+
+TASK [Set ochami_env] *************************************************************************************************************
+ok: [oim]
+
+TASK [Check ochami bss status] ****************************************************************************************************
+ok: [oim]
+
+TASK [Restart acme-deploy service] ************************************************************************************************
+skipping: [oim]
+
+TASK [Wait for 10 seconds before checking again] **********************************************************************************
+skipping: [oim]
+
+TASK [Check ochami bss status] ****************************************************************************************************
+skipping: [oim]
+
+TASK [Display bss status] *********************************************************************************************************
+skipping: [oim]
+
+PLAY [Discover nodes, configure bss and cloud-init] *******************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************
+ok: [oim]
+
+TASK [Discover nodes] *************************************************************************************************************
+
+TASK [configure_ochami : Include openchami commands] ******************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set openchami SELinux context] ***************************************************************************
+changed: [oim]
+
+TASK [configure_ochami : Include openchami vars] **********************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Create ochami nodes directory] ***************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Load the openchami nodes.yaml] ***************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Create telemetry directory] ******************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Load BMC-group data file] ********************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Delete smd configuration] ********************************************************************************
+included: /omnia/discovery/roles/configure_ochami/tasks/delete_smd_config.yml for oim
+
+TASK [configure_ochami : Delete all ochami component endpoints] *******************************************************************
+changed: [oim]
+
+TASK [configure_ochami : Delete all ochami redfish endpoints] *********************************************************************
+changed: [oim]
+
+TASK [configure_ochami : Delete all ochami iface] *********************************************************************************
+changed: [oim]
+
+TASK [configure_ochami : Discover ochami nodes] ***********************************************************************************
+changed: [oim]
+
+TASK [configure_ochami : Verify node created in smd] ******************************************************************************
+changed: [oim]
+
+TASK [configure_ochami : Openchami smd status output] *****************************************************************************
+skipping: [oim]
+
+TASK [configure_ochami : Load the openchami hostname.yaml] ************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Configure the hostname] **********************************************************************************
+changed: [oim]
+
+TASK [nfs_client : Include storage_config.yml file] *******************************************************************************
+ok: [oim]
+
+TASK [nfs_client : Load software_config.json as software_config] ******************************************************************
+ok: [oim]
+
+TASK [nfs_client : Check if slurm support is true] ********************************************************************************
+ok: [oim]
+
+TASK [nfs_client : Check if service_k8s support is true] **************************************************************************
+ok: [oim]
+
+TASK [nfs_client : Include omnia_config] ******************************************************************************************
+ok: [oim]
+
+TASK [nfs_client : Set facts for slurm] *******************************************************************************************
+ok: [oim]
+
+TASK [nfs_client : Select the nfs client parameters for slurm] ********************************************************************
+ok: [oim]
+
+TASK [nfs_client : Add the slurm nfs] *********************************************************************************************
+ok: [oim]
+
+TASK [nfs_client : Include omnia_config] ******************************************************************************************
+skipping: [oim]
+
+TASK [nfs_client : Set facts for service_k8s] *************************************************************************************
+skipping: [oim]
+
+TASK [nfs_client : Select the nfs client parameters for service_k8s] **************************************************************
+skipping: [oim]
+
+TASK [nfs_client : Add the service_k8s nfs] ***************************************************************************************
+skipping: [oim]
+
+TASK [nfs_client : Print nfs_storage_name] ****************************************************************************************
+ok: [oim] => {
+    "msg": [
+        {
+            "client_mount_options": "nosuid,rw,sync,hard,intr",
+            "client_share_path": "/share_omnia",
+            "nfs_name": "nfs_slurm",
+            "server_ip": "100.96.20.223",
+            "server_share_path": "/mnt/nfsuser/sujal/cluster1/slurm"
+        }
+    ]
+}
+
+TASK [nfs_client : Install NFS client with bolt-on support] ***********************************************************************
+included: /omnia/discovery/roles/nfs_client/tasks/nfs_client.yml for oim => (item={'server_ip': '100.96.20.223', 'server_share_path': '/mnt/nfsuser/sujal/cluster1/slurm', 'client_share_path': '/share_omnia', 'client_mount_options': 'nosuid,rw,sync,hard,intr', 'nfs_name': 'nfs_slurm'})
+
+TASK [nfs_client : Initialize variable when client_share_path value is not given] *************************************************
+skipping: [oim]
+
+TASK [nfs_client : Initialize variable when client_share_path value is given] *****************************************************
+ok: [oim]
+
+TASK [nfs_client : Fetch server_ip and server_share_path from list when nfs sever is not localhost] *******************************
+ok: [oim]
+
+TASK [nfs_client : Fetch server_ip and server_share_path from list when nfs sever is localhost] ***********************************
+skipping: [oim]
+
+TASK [nfs_client : Package installation for NFS] **********************************************************************************
+ok: [oim]
+
+TASK [nfs_client : Mount facts items to dict] *************************************************************************************
+ok: [oim]
+
+TASK [nfs_client : Create the directory for mounting NFS client with server_share_path as client_share_path] **********************
+ok: [oim]
+
+TASK [nfs_client : Mount NFS share with fstab entry] ******************************************************************************
+ok: [oim]
+
+TASK [nfs_client : Mount only the current nfs item] *******************************************************************************
+changed: [oim]
+
+TASK [k8s_config : Creating the configuration files required for service_k8s in nfs share] ****************************************
+skipping: [oim]
+
+TASK [slurm_config : Load software_config.json as software_config] ****************************************************************
+ok: [oim]
+
+TASK [slurm_config : Check if slurm support is true] ******************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Get the slurm hostnames] *************************************************************************************
+included: /omnia/discovery/roles/slurm_config/tasks/read_slurm_hostnames.yml for oim
+
+TASK [slurm_config : Slurp remote YAML file] **************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Parse YAML into vars] ****************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Read the node name group] ************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Group the functional_groups] *********************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Re-organize the groups] **************************************************************************************
+ok: [oim] => (item=['slurm_control_node_x86_64', [{'key': 'slurm-control-node1', 'value': 'slurm_control_node_x86_64'}]])
+ok: [oim] => (item=['slurm_node_x86_64', [{'key': 'slurm-node1', 'value': 'slurm_node_x86_64'}]])
+
+TASK [slurm_config : Get name and IP mapping 1] ***********************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Get name and IP mapping 2] ***********************************************************************************
+ok: [oim] => (item={'key': 'slurm-control-node1', 'value': [{'mac_addr': '00:0c:29:19:6a:5b', 'ip_addrs': [{'name': 'management', 'ip_addr': '182.12.0.33'}]}]})
+ok: [oim] => (item={'key': 'slurm-node1', 'value': [{'mac_addr': 'aa:bb:cc:dd:ee:ff', 'ip_addrs': [{'name': 'management', 'ip_addr': '182.12.0.55'}]}]})
+
+TASK [slurm_config : Get bmc_ip] **************************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Assign slurm lists] ******************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Fail if Slurm controller list is empty] **********************************************************************
+skipping: [oim]
+
+TASK [slurm_config : Extract slurm controller IP] *********************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Entering the slurm configuration only if slurm in nodes.yaml] ************************************************
+included: /omnia/discovery/roles/slurm_config/tasks/create_slurm_dir.yml for oim
+
+TASK [slurm_config : Include variable file omnia_config.yml] **********************************************************************
+ok: [oim]
+
+TASK [slurm_config : Include storage vars] ****************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Load slurm_custom.json for x86_64] ***************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Load slurm_custom.json for aarch64] **************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Extract CUDA runfile name for x86_64 from slurm_custom.json] *************************************************
+ok: [oim]
+
+TASK [slurm_config : Extract CUDA runfile name for aarch64 from slurm_custom.json] ************************************************
+ok: [oim]
+
+TASK [slurm_config : Set facts for slurm] *****************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Read the slurm mount point] **********************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Set facts for slurm] *****************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Configure openldap if supported] *****************************************************************************
+included: /omnia/discovery/roles/slurm_config/tasks/openldap_config.yml for oim
+
+TASK [slurm_config : Set facts for openldap] **************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Create the openldap certs directory in share] ****************************************************************
+ok: [oim]
+
+TASK [slurm_config : Create the openldap ldapuser directory in share] *************************************************************
+ok: [oim]
+
+TASK [slurm_config : Copy the openldap certs] *************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : NFS path for cloud init] *************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Set facts for slurm] *****************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Clear the share directory] ***********************************************************************************
+skipping: [oim]
+
+TASK [slurm_config : Create the slurm directory in share] *************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Create directory for controller init track file in share] ****************************************************
+ok: [oim]
+
+TASK [slurm_config : Create the slurm ctld directory on share] ********************************************************************
+ok: [oim] => (item=['slurm-control-node1', '/etc/slurm'])
+ok: [oim] => (item=['slurm-control-node1', '/etc/my.cnf.d'])
+ok: [oim] => (item=['slurm-control-node1', '/var/lib/mysql'])
+ok: [oim] => (item=['slurm-control-node1', '/var/log/mariadb'])
+ok: [oim] => (item=['slurm-control-node1', '/var/log/slurm'])
+ok: [oim] => (item=['slurm-control-node1', '/var/spool'])
+ok: [oim] => (item=['slurm-control-node1', '/etc/munge'])
+
+TASK [slurm_config : Create the slurm cmpt directory on share] ********************************************************************
+ok: [oim] => (item=['slurm-node1', '/var/log/slurm'])
+ok: [oim] => (item=['slurm-node1', '/var/spool'])
+ok: [oim] => (item=['slurm-node1', '/var/lib/slurm'])
+ok: [oim] => (item=['slurm-node1', '/etc/slurm/epilog.d'])
+ok: [oim] => (item=['slurm-node1', '/etc/munge'])
+
+TASK [slurm_config : Create the cert directory on share] **************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Copy pulp webserver certificate to client_share_path] ********************************************************
+ok: [oim]
+
+TASK [slurm_config : Create hpc tools dirs] ***************************************************************************************
+included: /omnia/discovery/roles/slurm_config/tasks/hpc_tools.yml for oim
+
+TASK [slurm_config : Create HPC tools directories on share] ***********************************************************************
+ok: [oim] => (item=cuda)
+ok: [oim] => (item=runfile)
+ok: [oim] => (item=scripts)
+ok: [oim] => (item=container_images)
+
+TASK [slurm_config : Deploy download_container_image.sh to NFS share] *************************************************************
+ok: [oim]
+
+TASK [slurm_config : Deploy container_image.list to NFS share] ********************************************************************
+ok: [oim]
+
+TASK [slurm_config : Set fact for pulp mirror] ************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Create x86_64 package base directory] ************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Create aarch64 package base directory] ***********************************************************************
+ok: [oim]
+
+TASK [slurm_config : Create x86_64 package layout directories] ********************************************************************
+ok: [oim] => (item=doca-ofed)
+ok: [oim] => (item=cuda)
+
+TASK [slurm_config : Create aarch64 package layout directories] *******************************************************************
+ok: [oim] => (item=doca-ofed)
+ok: [oim] => (item=cuda)
+
+TASK [slurm_config : Print copy paths for x86_64] *********************************************************************************
+ok: [oim] => (item={'name': 'doca-ofed', 'source_path': '/local/omnia/offline_repo/cluster/x86_64/rhel/10.0/iso/doca-ofed', 'dest_path': '/share_omnia/slurm/packages/x86_64/doca-ofed'}) => {
+    "msg": "Copying doca-ofed from /local/omnia/offline_repo/cluster/x86_64/rhel/10.0/iso/doca-ofed to /share_omnia/slurm/packages/x86_64/doca-ofed"
+}
+
+TASK [slurm_config : Print copy paths for aarch64] ********************************************************************************
+ok: [oim] => (item={'name': 'doca-ofed', 'source_path': '/local/omnia/offline_repo/cluster/aarch64/rhel/10.0/iso/doca-ofed', 'dest_path': '/share_omnia/slurm/packages/aarch64/doca-ofed'}) => {
+    "msg": "Copying doca-ofed from /local/omnia/offline_repo/cluster/aarch64/rhel/10.0/iso/doca-ofed to /share_omnia/slurm/packages/aarch64/doca-ofed"
+}
+
+TASK [slurm_config : Check x86_64 offline package sources] ************************************************************************
+ok: [oim] => (item={'name': 'doca-ofed', 'source_path': '/local/omnia/offline_repo/cluster/x86_64/rhel/10.0/iso/doca-ofed', 'dest_path': '/share_omnia/slurm/packages/x86_64/doca-ofed'})
+
+TASK [slurm_config : Check aarch64 offline package sources] ***********************************************************************
+ok: [oim] => (item={'name': 'doca-ofed', 'source_path': '/local/omnia/offline_repo/cluster/aarch64/rhel/10.0/iso/doca-ofed', 'dest_path': '/share_omnia/slurm/packages/aarch64/doca-ofed'})
+
+TASK [slurm_config : Copy x86_64 offline packages] ********************************************************************************
+ok: [oim] => (item={'changed': False, 'stat': {'exists': True, 'path': '/local/omnia/offline_repo/cluster/x86_64/rhel/10.0/iso/doca-ofed', 'mode': '0755', 'isdir': True, 'ischr': False, 'isblk': False, 'isreg': False, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 0, 'gid': 0, 'size': 4096, 'inode': 51907589, 'dev': 60, 'nlink': 2, 'atime': 1771742467.4072034, 'mtime': 1770119527.3488104, 'ctime': 1770119527.3488104, 'wusr': True, 'rusr': True, 'xusr': True, 'wgrp': False, 'rgrp': True, 'xgrp': True, 'woth': False, 'roth': True, 'xoth': True, 'isuid': False, 'isgid': False, 'blocks': 8, 'block_size': 1048576, 'device_type': 0, 'readable': True, 'writeable': True, 'executable': True, 'pw_name': 'root', 'gr_name': 'root', 'mimetype': 'inode/directory', 'charset': 'binary', 'version': None, 'attributes': [], 'attr_flags': ''}, 'invocation': {'module_args': {'path': '/local/omnia/offline_repo/cluster/x86_64/rhel/10.0/iso/doca-ofed', 'follow': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': {'name': 'doca-ofed', 'source_path': '/local/omnia/offline_repo/cluster/x86_64/rhel/10.0/iso/doca-ofed', 'dest_path': '/share_omnia/slurm/packages/x86_64/doca-ofed'}, 'ansible_loop_var': 'item'})
+
+TASK [slurm_config : Copy aarch64 offline packages] *******************************************************************************
+skipping: [oim] => (item={'changed': False, 'stat': {'exists': False}, 'invocation': {'module_args': {'path': '/local/omnia/offline_repo/cluster/aarch64/rhel/10.0/iso/doca-ofed', 'follow': False, 'get_checksum': True, 'get_mime': True, 'get_attributes': True, 'checksum_algorithm': 'sha1'}}, 'failed': False, 'item': {'name': 'doca-ofed', 'source_path': '/local/omnia/offline_repo/cluster/aarch64/rhel/10.0/iso/doca-ofed', 'dest_path': '/share_omnia/slurm/packages/aarch64/doca-ofed'}, 'ansible_loop_var': 'item'})
+skipping: [oim]
+
+TASK [slurm_config : Set NFS info fact] *******************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Check if source directory exists] ****************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Check if source directory exists] ****************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Copy cuda run file using copy module for aarch64] ************************************************************
+skipping: [oim]
+
+TASK [slurm_config : Copy cuda run file using copy module for x86_64] *************************************************************
+ok: [oim]
+
+TASK [slurm_config : Check if munge key exists top level] *************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Ensure munge key is generated] *******************************************************************************
+skipping: [oim]
+
+TASK [slurm_config : Distribute the munge key] ************************************************************************************
+ok: [oim] => (item=slurm-control-node1)
+ok: [oim] => (item=slurm-node1)
+
+TASK [slurm_config : Conf merge and write using slurm_conf module] ****************************************************************
+included: /omnia/discovery/roles/slurm_config/tasks/confs.yml for oim
+
+TASK [slurm_config : Slurm dict ops] **********************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Read NodeName parameters] ************************************************************************************
+included: /omnia/discovery/roles/slurm_config/tasks/read_node_idrac.yml for oim => (item=slurm-node1)
+
+TASK [slurm_config : Read Processor NodeParams] ***********************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Get CPU Processors list] *************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Read Memory NodeParams] **************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Calculate total memory in MB (GiB → MB)] *********************************************************************
+ok: [oim]
+
+TASK [slurm_config : Calculate 90% of real memory] ********************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Calculate proc facts] ****************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Add to Nodeparam dict] ***************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Add gpu parameters to slurm conf] ****************************************************************************
+skipping: [oim]
+
+TASK [slurm_config : Slurm dict ops] **********************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Create all .conf for ctld only Write all files default config] ***********************************************
+ok: [oim] => (item=['slurm-control-node1', 'slurm'])
+ok: [oim] => (item=['slurm-control-node1', 'slurmdbd'])
+ok: [oim] => (item=['slurm-control-node1', 'cgroup'])
+ok: [oim] => (item=['slurm-control-node1', 'gres'])
+
+TASK [slurm_config : Conf merge and write using slurm_conf module] ****************************************************************
+skipping: [oim]
+
+TASK [slurm_config : Create mariadb cnf] ******************************************************************************************
+ok: [oim] => (item=slurm-control-node1)
+
+TASK [slurm_config : Generate slurmd opts for Configless] *************************************************************************
+ok: [oim]
+
+TASK [slurm_config : Create epilog.sh and slurmd.service] *************************************************************************
+ok: [oim] => (item=['slurm-node1', 'logout_user.sh'])
+ok: [oim] => (item=['slurm-node1', 'slurmd.service'])
+
+TASK [slurm_config : Create slurmd.service in login and login_compiler] ***********************************************************
+skipping: [oim]
+
+TASK [slurm_config : Get the slurm NFS path] **************************************************************************************
+ok: [oim] => {
+    "msg": "The slurm NFS path is /share_omnia/slurm"
+}
+
+TASK [slurm_config : NFS path for cloud init] *************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : NFS path for controller trackfile] ***************************************************************************
+ok: [oim]
+
+TASK [slurm_config : NFS path for cloud init] *************************************************************************************
+ok: [oim]
+
+TASK [slurm_config : NFS path for ucx, openmpi and ldms cloud init] ***************************************************************
+ok: [oim]
+
+TASK [slurm_config : Ensure SSH key directory exists on Slurm share] **************************************************************
+ok: [oim]
+
+TASK [slurm_config : Copy OIM private key to Slurm share for node-to-node SSH] ****************************************************
+ok: [oim]
+
+TASK [openldap : Extract the domain name required by LDAP] ************************************************************************
+ok: [oim]
+
+TASK [openldap : Set the server-ip required by LDAP] ******************************************************************************
+ok: [oim]
+
+TASK [openldap : Set the ldap_connection_type required by LDAP] *******************************************************************
+ok: [oim]
+
+TASK [openldap : Set the password required by LDAP] *******************************************************************************
+ok: [oim]
+
+TASK [openldap : Set the ldap_connection_type required by LDAP] *******************************************************************
+ok: [oim]
+
+TASK [telemetry : Include telemetry configuration file] ***************************************************************************
+ok: [oim]
+
+TASK [telemetry : Read telemetry packages from software config] *******************************************************************
+included: /omnia/discovery/roles/telemetry/tasks/read_software_config.yml for oim
+
+TASK [telemetry : Run pulp status command on omnia_core container] ****************************************************************
+ok: [oim -> localhost]
+
+TASK [telemetry : Set pulp content origin value] **********************************************************************************
+ok: [oim]
+
+TASK [telemetry : Set fact for pulp protocol] *************************************************************************************
+ok: [oim]
+
+TASK [telemetry : Get cluster_os_type from software_config.json] ******************************************************************
+ok: [oim]
+
+TASK [telemetry : Get cluster_os_version from software_config.json] ***************************************************************
+ok: [oim]
+
+TASK [telemetry : Load service_k8s.json] ******************************************************************************************
+ok: [oim]
+
+TASK [telemetry : Extract service_k8s.json and set facts for pip_modules and python_version] **************************************
+ok: [oim]
+
+TASK [telemetry : Load service images from service_k8s.json] **********************************************************************
+included: /omnia/discovery/roles/telemetry/tasks/load_service_images.yml for oim
+
+TASK [telemetry : Extract image packages from service_k8s.json] *******************************************************************
+ok: [oim]
+
+TASK [telemetry : Create service images mapping] **********************************************************************************
+ok: [oim] => (item={'package': 'docker.io/library/busybox', 'type': 'image', 'tag': '1.36'})
+ok: [oim] => (item={'package': 'docker.io/victoriametrics/victoria-metrics', 'type': 'image', 'tag': 'v1.128.0'})
+ok: [oim] => (item={'package': 'docker.io/victoriametrics/vmagent', 'type': 'image', 'tag': 'v1.128.0'})
+ok: [oim] => (item={'package': 'docker.io/victoriametrics/vmstorage', 'type': 'image', 'tag': 'v1.128.0-cluster'})
+ok: [oim] => (item={'package': 'docker.io/victoriametrics/vminsert', 'type': 'image', 'tag': 'v1.128.0-cluster'})
+ok: [oim] => (item={'package': 'docker.io/victoriametrics/vmselect', 'type': 'image', 'tag': 'v1.128.0-cluster'})
+ok: [oim] => (item={'package': 'docker.io/alpine/kubectl', 'tag': '1.34.1', 'type': 'image'})
+ok: [oim] => (item={'package': 'docker.io/curlimages/curl', 'type': 'image', 'tag': '8.17.0'})
+ok: [oim] => (item={'package': 'docker.io/rmohr/activemq', 'type': 'image', 'tag': '5.15.9'})
+ok: [oim] => (item={'package': 'docker.io/library/mysql', 'type': 'image', 'tag': '9.3.0'})
+ok: [oim] => (item={'package': 'docker.io/dellhpcomniaaisolution/idrac_telemetry_receiver', 'type': 'image', 'tag': '1.0'})
+ok: [oim] => (item={'package': 'docker.io/dellhpcomniaaisolution/kafkapump', 'type': 'image', 'tag': '1.0'})
+ok: [oim] => (item={'package': 'docker.io/dellhpcomniaaisolution/victoriapump', 'type': 'image', 'tag': '1.0'})
+ok: [oim] => (item={'package': 'quay.io/strimzi/operator', 'tag': '0.48.0', 'type': 'image'})
+ok: [oim] => (item={'package': 'quay.io/strimzi/kafka', 'tag': '0.48.0-kafka-4.1.0', 'type': 'image'})
+ok: [oim] => (item={'package': 'docker.io/dellhpcomniaaisolution/ubuntu-ldms', 'tag': '1.0', 'type': 'image'})
+ok: [oim] => (item={'package': 'quay.io/strimzi/kafka-bridge', 'tag': '0.33.1', 'type': 'image'})
+
+TASK [telemetry : Debug service images mapping] ***********************************************************************************
+skipping: [oim]
+
+TASK [telemetry : Service cluster prerequisite] ***********************************************************************************
+skipping: [oim]
+
+TASK [telemetry : Generate telemetry deployments] *********************************************************************************
+skipping: [oim]
+
+TASK [telemetry : Validate idrac telemetry config] ********************************************************************************
+skipping: [oim]
+
+TASK [telemetry : Generate service cluster metadata] ******************************************************************************
+skipping: [oim]
+
+TASK [telemetry : Include update_ldms_sampler.yml] ********************************************************************************
+skipping: [oim]
+
+TASK [telemetry : Update ldms agg configuration] **********************************************************************************
+skipping: [oim]
+
+TASK [configure_ochami : Include openchami vars (oim scope)] **********************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Load openchami commands into set_fact] *******************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Include openchami cloud-init vars] ***********************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Create groups] *******************************************************************************************
+included: /omnia/discovery/roles/configure_ochami/tasks/create_groups.yml for oim => (item=slurm_control_node_x86_64)
+included: /omnia/discovery/roles/configure_ochami/tasks/create_groups.yml for oim => (item=slurm_node_x86_64)
+
+TASK [configure_ochami : Set the functional_group_name] ***************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Load the openchami groups.yaml] **************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Get SMD group data] **************************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set existing_smd_groups] *********************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Get existing SMD groups] *********************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : POST new SMD groups] *************************************************************************************
+skipping: [oim]
+
+TASK [configure_ochami : Check for group updates] *********************************************************************************
+included: /omnia/discovery/roles/configure_ochami/tasks/update_smd_groups.yaml for oim
+
+TASK [configure_ochami : Get SMD group data - slurm_control_node_x86_64] **********************************************************
+ok: [oim]
+
+TASK [configure_ochami : Include group vars] **************************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Decode and parse group_vars YAML] ************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set inventory_group_members as comma-separated string] ***************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set changed if contents do not match - slurm_control_node_x86_64] ****************************************
+skipping: [oim]
+
+TASK [configure_ochami : DELETE group - slurm_control_node_x86_64] ****************************************************************
+skipping: [oim]
+
+TASK [configure_ochami : POST group - slurm_control_node_x86_64] ******************************************************************
+skipping: [oim]
+
+TASK [configure_ochami : Set the functional_group_name] ***************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Load the openchami groups.yaml] **************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Get SMD group data] **************************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set existing_smd_groups] *********************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Get existing SMD groups] *********************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : POST new SMD groups] *************************************************************************************
+skipping: [oim]
+
+TASK [configure_ochami : Check for group updates] *********************************************************************************
+included: /omnia/discovery/roles/configure_ochami/tasks/update_smd_groups.yaml for oim
+
+TASK [configure_ochami : Get SMD group data - slurm_node_x86_64] ******************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Include group vars] **************************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Decode and parse group_vars YAML] ************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set inventory_group_members as comma-separated string] ***************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set changed if contents do not match - slurm_node_x86_64] ************************************************
+skipping: [oim]
+
+TASK [configure_ochami : DELETE group - slurm_node_x86_64] ************************************************************************
+skipping: [oim]
+
+TASK [configure_ochami : POST group - slurm_node_x86_64] **************************************************************************
+skipping: [oim]
+
+TASK [configure_ochami : Fecth image of additional_packages.json file] ************************************************************
+included: /omnia/discovery/roles/configure_ochami/tasks/fetch_additional_images.yml for oim
+
+TASK [configure_ochami : Load software_config.json] *******************************************************************************
+ok: [oim -> localhost]
+
+TASK [configure_ochami : Set dynamic additional_json_path] ************************************************************************
+ok: [oim -> localhost]
+
+TASK [configure_ochami : Collect additional container images from additional_packages.json] ***************************************
+ok: [oim -> localhost]
+
+TASK [configure_ochami : Set additional_images_dict fact] *************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Debug additional_images_dict] ****************************************************************************
+skipping: [oim]
+
+TASK [configure_ochami : Create groups common] ************************************************************************************
+included: /omnia/discovery/roles/configure_ochami/tasks/create_groups_common.yml for oim => (item=ssh)
+included: /omnia/discovery/roles/configure_ochami/tasks/create_groups_common.yml for oim => (item=chrony)
+
+TASK [configure_ochami : Set the common_group_name] *******************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Load the openchami common group - ssh] *******************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Delete the SMD common group - ssh] ***********************************************************************
+changed: [oim]
+
+TASK [configure_ochami : POST common SMD group] ***********************************************************************************
+changed: [oim]
+
+TASK [configure_ochami : Set the common_group_name] *******************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Load the openchami common group - chrony] ****************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Delete the SMD common group - chrony] ********************************************************************
+changed: [oim]
+
+TASK [configure_ochami : POST common SMD group] ***********************************************************************************
+changed: [oim]
+
+TASK [configure_ochami : Configure bss and cloud-init] ****************************************************************************
+included: /omnia/discovery/roles/configure_ochami/tasks/configure_bss_cloud_init.yml for oim
+
+TASK [configure_ochami : Include openchami vars] **********************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Include nodes vars] **************************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Decode and parse nodes_vars YAML] ************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set nodes] ***********************************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Create boot and cloud-init directory] ********************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Delete ochami bss boot params] ***************************************************************************
+ok: [oim] => (item=00:0c:29:19:6a:5b)
+ok: [oim] => (item=aa:bb:cc:dd:ee:ff)
+
+TASK [configure_ochami : Include configure bss] ***********************************************************************************
+included: /omnia/discovery/roles/configure_ochami/tasks/configure_bss_group.yml for oim => (item=slurm_control_node_x86_64)
+included: /omnia/discovery/roles/configure_ochami/tasks/configure_bss_group.yml for oim => (item=slurm_node_x86_64)
+
+TASK [configure_ochami : Set the functional_group_name] ***************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Verify image, kernel and initramfs in S3] ****************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set kernel and initrd variables] *************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Load bss template - slurm_control_node_x86_64] ***********************************************************
+ok: [oim]
+
+TASK [configure_ochami : Delete boot configuration - slurm_control_node_x86_64] ***************************************************
+changed: [oim]
+
+TASK [configure_ochami : Set boot configuration - slurm_control_node_x86_64] ******************************************************
+changed: [oim]
+
+TASK [configure_ochami : Set the functional_group_name] ***************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Verify image, kernel and initramfs in S3] ****************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set kernel and initrd variables] *************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Load bss template - slurm_node_x86_64] *******************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Delete boot configuration - slurm_node_x86_64] ***********************************************************
+changed: [oim]
+
+TASK [configure_ochami : Set boot configuration - slurm_node_x86_64] **************************************************************
+changed: [oim]
+
+TASK [configure_ochami : Verify boot params set] **********************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Verify boot params output] *******************************************************************************
+ok: [oim] => {
+    "msg": [
+        "- cloud-init:",
+        "    meta-data: null",
+        "    phone-home:",
+        "        fqdn: \"\"",
+        "        hostname: \"\"",
+        "        instance_id: \"\"",
+        "        pub_key_dsa: \"\"",
+        "        pub_key_ecdsa: \"\"",
+        "        pub_key_rsa: \"\"",
+        "    user-data: null",
+        "  initrd: http://182.12.0.250:9000/boot-images/efi-images/slurm_control_node_x86_64/rhel-slurm_control_node_x86_64/initramfs-6.12.0-55.9.1.el10_0.x86_64.img",
+        "  kernel: http://182.12.0.250:9000/boot-images/efi-images/slurm_control_node_x86_64/rhel-slurm_control_node_x86_64/vmlinuz-6.12.0-55.9.1.el10_0.x86_64",
+        "  macs:",
+        "    - 00:0c:29:19:6a:5b",
+        "  params: nomodeset ro root=live:http://182.12.0.250:9000/boot-images/slurm_control_node_x86_64/rhel-slurm_control_node_x86_64/rhel10.0-rhel-slurm_control_node_x86_64-10.0 ip=dhcp rd.live.image rd.live.ram rd.neednet=1 rd.driver.blacklist=ccp,edac_core,power_meter,ahci,megaraid_sas modprobe.blacklist=ccp,edac_core,power_meter,ahci,megaraid_sas libata.force=1:disable,2:disable,3:disable,4:disable rd.luks=0 rd.md=0 rd.dm=0 console=tty0 console=ttyS0,115200 selinux=0 apparmor=0 ip6=off cloud-init=enabled ds=nocloud;s=http://182.12.0.250:8081/cloud-init/",
+        "- cloud-init:",
+        "    meta-data: null",
+        "    phone-home:",
+        "        fqdn: \"\"",
+        "        hostname: \"\"",
+        "        instance_id: \"\"",
+        "        pub_key_dsa: \"\"",
+        "        pub_key_ecdsa: \"\"",
+        "        pub_key_rsa: \"\"",
+        "    user-data: null",
+        "  initrd: http://182.12.0.250:9000/boot-images/efi-images/slurm_node_x86_64/rhel-slurm_node_x86_64/initramfs-6.12.0-55.9.1.el10_0.x86_64.img",
+        "  kernel: http://182.12.0.250:9000/boot-images/efi-images/slurm_node_x86_64/rhel-slurm_node_x86_64/vmlinuz-6.12.0-55.9.1.el10_0.x86_64",
+        "  macs:",
+        "    - aa:bb:cc:dd:ee:ff",
+        "  params: nomodeset ro root=live:http://182.12.0.250:9000/boot-images/slurm_node_x86_64/rhel-slurm_node_x86_64/rhel10.0-rhel-slurm_node_x86_64-10.0 ip=dhcp rd.live.image rd.live.ram rd.neednet=1 rd.driver.blacklist=ccp,edac_core,power_meter,ahci,megaraid_sas modprobe.blacklist=ccp,edac_core,power_meter,ahci,megaraid_sas libata.force=1:disable,2:disable,3:disable,4:disable rd.luks=0 rd.md=0 rd.dm=0 console=tty0 console=ttyS0,115200 selinux=0 apparmor=0 ip6=off cloud-init=enabled ds=nocloud;s=http://182.12.0.250:8081/cloud-init/"
+    ]
+}
+
+TASK [configure_ochami : Create cloud-init directory] *****************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Read the ssh key] ****************************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set read_ssh_key as fact for template access] ************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Hash the password] ***************************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set hashed_password_output as fact for template access] **************************************************
+ok: [oim]
+
+TASK [configure_ochami : Load ci defaults template] *******************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set ci defaults configuration] ***************************************************************************
+changed: [oim]
+
+TASK [configure_ochami : Verify ci] ***********************************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Verify ci defaults output] *******************************************************************************
+skipping: [oim]
+
+TASK [configure_ochami : Configure cloud-init group] ******************************************************************************
+included: /omnia/discovery/roles/configure_ochami/tasks/configure_cloud_init_common.yml for oim
+
+TASK [configure_ochami : Delete ci group configuration - common] ******************************************************************
+changed: [oim]
+
+TASK [configure_ochami : Render ci group common template] *************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set ci group configuration - common] *********************************************************************
+changed: [oim]
+
+TASK [configure_ochami : Include configure cloud init] ****************************************************************************
+included: /omnia/discovery/roles/configure_ochami/tasks/configure_cloud_init_group.yml for oim => (item=slurm_control_node_x86_64)
+included: /omnia/discovery/roles/configure_ochami/tasks/configure_cloud_init_group.yml for oim => (item=slurm_node_x86_64)
+
+TASK [configure_ochami : Include openchami cloud-init vars] ***********************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Include vars from default] *******************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set the functional_group_name] ***************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Delete ci group configuration - slurm_control_node_x86_64] ***********************************************
+changed: [oim]
+
+TASK [configure_ochami : Load ci group template - slurm_control_node_x86_64] ******************************************************
+changed: [oim]
+
+TASK [configure_ochami : Set ci group configuration - slurm_control_node_x86_64] **************************************************
+changed: [oim]
+
+TASK [configure_ochami : Verify ci group configuration - slurm_control_node_x86_64] ***********************************************
+ok: [oim]
+
+TASK [configure_ochami : Verify ci group output - slurm_control_node_x86_64] ******************************************************
+skipping: [oim]
+
+TASK [configure_ochami : Include openchami cloud-init vars] ***********************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Include vars from default] *******************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Set the functional_group_name] ***************************************************************************
+ok: [oim]
+
+TASK [configure_ochami : Delete ci group configuration - slurm_node_x86_64] *******************************************************
+changed: [oim]
+
+TASK [configure_ochami : Load ci group template - slurm_node_x86_64] **************************************************************
+changed: [oim]
+
+TASK [configure_ochami : Set ci group configuration - slurm_node_x86_64] **********************************************************
+changed: [oim]
+
+TASK [configure_ochami : Verify ci group configuration - slurm_node_x86_64] *******************************************************
+ok: [oim]
+
+TASK [configure_ochami : Verify ci group output - slurm_node_x86_64] **************************************************************
+skipping: [oim]
+
+TASK [configure_ochami : Set openchami SELinux context] ***************************************************************************
+changed: [oim]
+
+TASK [configure_ochami : Discovery completion] ************************************************************************************
+included: /omnia/discovery/roles/configure_ochami/tasks/discovery_completion.yml for oim
+
+TASK [configure_ochami : Discovery completion] ************************************************************************************
+ok: [oim] => {
+    "msg": "The discovery.yml playbook has completed successfully. Next, you can either manually PXE boot the nodes or use the utils/set_pxe_boot.yml playbook by specifying a bmc group in your inventory to initiate the PXE boot process. Once the nodes have booted, proceed to run telemetry/telemetry.yml to start collecting telemetry data."
+}
+
+PLAY RECAP ************************************************************************************************************************
+localhost                  : ok=133  changed=5    unreachable=0    failed=0    skipped=88   rescued=0    ignored=0
+oim                        : ok=244  changed=26   unreachable=0    failed=0    skipped=45   rescued=0    ignored=0

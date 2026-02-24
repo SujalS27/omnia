@@ -12,11 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 ---
-
-
 - name: Include vars from provision_config.yml
   ansible.builtin.include_vars:
-    file: "{{ input_project_dir }}/{{ provision_config_file }}"
+    file: "{{ provision_config_file }}"
 
 - name: Set fact for functional groups file path
   ansible.builtin.set_fact:
@@ -26,7 +24,7 @@
   generate_functional_groups:
     mapping_file_path: "{{ pxe_mapping_file_path }}"
     functional_groups_file_path: "{{ functional_groups_config_path }}"
-    omnia_config_path: "{{ input_project_dir }}/{{ omnia_config_file }}"
+    omnia_config_path: "{{ omnia_config_file }}"
 
 - name: Check the functional_groups_config.yml file is created in /opt/omnia/.data
   ansible.builtin.stat:
