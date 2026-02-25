@@ -25,6 +25,12 @@ openchami_hostname_vars_path: "{{ nodes_dir }}/hostname.yaml"
 # Usage: fetch_additional_images.yml and other tasks requiring software_config
 software_config_file_path: "{{ hostvars['localhost']['software_config_file'] }}"
  
+# Usage: create_groups.yml
+openchami_groups_template: "{{ role_path }}/templates/nodes/groups.yaml.j2"
+
+# Usage: create_groups_common.yml
+openchami_groups_common_template: "{{ role_path }}/templates/nodes/groups_common.yaml.j2"
+
 # Usage: configure_bss_group.yml, configure_bss_cloud_init.yml
 bss_template: bss/bss.yaml.j2
 image_missing_fail_msg: "Failed to set kernel or initrd. Create the image using build_image.yml and try again."

@@ -54,56 +54,6 @@
   ansible.builtin.debug:
     msg: "{{ boot_params_output.stdout_lines }}"
 
-- name: Create cloud-init directory
-  ansible.builtin.file:
-    path: "{{ cloud_init_dir }}"
-    state: directory
-    mode: "{{ hostvars['localhost']['dir_permissions_755'] }}"
-
-- name: Read the ssh key
-  ansible.builtin.command: cat {{ ssh_key_path }}
-  changed_when: false
-  register: read_ssh_key
-  no_log: true
-
-- name: Hash the password
-  ansible.builtin.command: openssl passwd -6 "{{ hostvars['localhost']['provision_password'] }}"
-  changed_when: false
-  register: hashed_password_output
-  no_log: true
-
-- name: Set hashed_password_output as fact for template access
-  ansible.builtin.set_fact:
-    hashed_password_output: "{{ hashed_password_output }}"
-    cacheable: true
-
-- name: Load ci defaults template
-  ansible.builtin.template:
-    src: "{{ ci_defaults_template }}"
-    dest: "{{ ci_defaults_dest }}"
-    mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
-
-- name: Set ci defaults configuration
-  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_defaults_set }} @{{ ci_defaults_dest }}"
-  changed_when: true
-
-- name: Verify ci defaults configuration
-  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_defaults_get }}"
-  changed_when: false
-  register: ci_defaults_output
-
-- name: Verify ci defaults output
-  ansible.builtin.debug:
-    msg: "{{ ci_defaults_output.stdout_lines }}"
-    verbosity: 2
-
-- name: Configure cloud-init group
-  ansible.builtin.include_tasks: configure_cloud_init_common.yml
-
-- name: Include configure cloud init
-  ansible.builtin.include_tasks: configure_cloud_init_group.yml
-  with_items: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
-
 - name: Set openchami SELinux context
   ansible.builtin.command: chcon -R system_u:object_r:container_file_t:s0 "{{ hostvars['localhost']['oim_shared_path'] }}/omnia/openchami"
   changed_when: true

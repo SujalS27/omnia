@@ -143,31 +143,8 @@
       tags:
         - openchami_commands
 
-    - name: Create and manage SMD groups
-      ansible.builtin.include_role:
-        name: openchami_groups
-      tags:
-        - smd_groups
-
-    - name: Configure BSS boot parameters
-      ansible.builtin.include_role:
-        name: openchami_bss
-      tags:
-        - bss
-
     - name: Configure cloud-init
       ansible.builtin.include_role:
         name: openchami_cloud_init
       tags:
         - cloud_init
-
-    - name: Discovery completion
-      ansible.builtin.include_role:
-        name: openchami_cloud_init
-        tasks_from: discovery_completion.yml
-      tags:
-        - openchami_commands
-        - smd_groups
-        - bss
-        - cloud_init
-        - input_project 
