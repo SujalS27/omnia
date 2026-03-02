@@ -36,6 +36,10 @@
 
 - name: Generate functional groups configuration
   ansible.builtin.import_playbook: ../utils/generate_functional_groups.yml
+  vars:
+    provision_config_file: "{{ provision_config_file }}"
+    omnia_config_file: "{{ omnia_config_file }}"
+    functional_groups_config_path: "{{ functional_groups_config_path }}"
   tags: always
 
 - name: Set_fact for fetch omnia config credentials
