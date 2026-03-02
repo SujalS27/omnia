@@ -35,3 +35,7 @@
     - name: Include generate_functional_groups role
       ansible.builtin.include_role:
         name: generate_functional_groups
+
+    - name: Export functional_groups_config_path for downstream tasks
+      ansible.builtin.set_fact:
+        functional_groups_config_path: "{{ functional_groups_config_path_resolved }}"
