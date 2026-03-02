@@ -13,6 +13,5 @@
 #  limitations under the License.
 ---
 
-provision_config_file: "provision_config.yml"
-omnia_config_file: "omnia_config.yml"
-functional_groups_config_path: "/opt/omnia/.data/functional_groups_config.yml"
+# Variables are now passed from the calling playbook
+# to avoid recursion and ensure correct paths
