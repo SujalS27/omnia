@@ -18,7 +18,7 @@
   tags: always
   tasks:
     - ansible.builtin.include_vars:
-        file: "{{ playbook_dir }}/input_vars/global_input.yml"
+        file: "{{ playbook_dir }}/../common/vars/global_input.yml"
 
 - name: Include input project directory
   when: not project_dir_status | default(false) | bool
@@ -36,10 +36,6 @@
 
 - name: Generate functional groups configuration
   ansible.builtin.import_playbook: ../utils/generate_functional_groups.yml
-  vars:
-    provision_config_file: "{{ provision_config_file }}"
-    omnia_config_file: "{{ omnia_config_file }}"
-    functional_groups_config_path: "{{ functional_groups_config_path }}"
   tags: always
 
 - name: Set_fact for fetch omnia config credentials

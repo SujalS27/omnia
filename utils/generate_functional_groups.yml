@@ -17,13 +17,9 @@
   hosts: localhost
   connection: local
   tasks:
-    - name: Verify required variables are defined
-      ansible.builtin.assert:
-        that:
-          - provision_config_file is defined
-          - omnia_config_file is defined
-          - functional_groups_config_path is defined
-        fail_msg: "Required variables not defined. Ensure global_input.yml is loaded before this playbook."
+    - name: Load global input defaults
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../common/vars/global_input.yml"
 
     - name: Include generate_functional_groups role
       ansible.builtin.include_role:
