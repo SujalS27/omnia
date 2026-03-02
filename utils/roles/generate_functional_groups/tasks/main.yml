@@ -12,10 +12,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 ---
+- name: Debug provision_config_file value
+  ansible.builtin.debug:
+    var: provision_config_file
+
 - name: Include vars from provision_config.yml
   ansible.builtin.include_vars:
-    file: "{{ provision_config_file }}"
-  when: provision_config_file is defined and provision_config_file is file
+    file: "{{ provision_config_file | default('/opt/omnia/input/project_default/provision_config.yml') }}"
 
 - name: Set fact for functional groups file path
   ansible.builtin.set_fact:
