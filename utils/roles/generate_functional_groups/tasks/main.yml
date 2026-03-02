@@ -15,6 +15,7 @@
 - name: Include vars from provision_config.yml
   ansible.builtin.include_vars:
     file: "{{ provision_config_file }}"
+  when: provision_config_file is file
 
 - name: Set fact for functional groups file path
   ansible.builtin.set_fact:

@@ -16,5 +16,14 @@
 - name: Include input directory
   hosts: localhost
   connection: local
+  vars:
+    # Ensure global input paths are available to the role
+    provision_config_file: "{{ input_project_dir }}/provision_config.yml"
+    omnia_config_file: "{{ input_project_dir }}/omnia_config.yml"
+    functional_groups_config_path: "/opt/omnia/.data/functional_groups_config.yml"
+  pre_tasks:
+    - name: Load global input defaults
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/discovery/input_vars/global_input.yml"
   roles:
     - generate_functional_groups

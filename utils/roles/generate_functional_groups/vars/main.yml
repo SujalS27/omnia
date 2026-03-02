@@ -13,6 +13,6 @@
 #  limitations under the License.
 ---
 
-provision_config_file: "{{ hostvars['localhost'].provision_config_file | default('provision_config.yml') }}"
-omnia_config_file: "{{ hostvars['localhost'].omnia_config_file | default('omnia_config.yml') }}"
-functional_groups_config_path: "{{ hostvars['localhost'].functional_groups_config_path | default('/opt/omnia/.data/functional_groups_config.yml') }}"
+provision_config_file: "provision_config.yml"
+omnia_config_file: "omnia_config.yml"
+functional_groups_config_path: "/opt/omnia/.data/functional_groups_config.yml"
