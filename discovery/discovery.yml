@@ -123,12 +123,9 @@
       ansible.builtin.include_role:
         name: configure_ochami
         tasks_from: discover_mapping_nodes.yml
-  roles:
-    - nfs_client
-    - k8s_config
-    - slurm_config
-    - openldap
-    - telemetry
+      tags:
+        - openchami_commands
+        - always
   tasks:
     - name: Load input project data
       ansible.builtin.include_role:
@@ -148,3 +145,47 @@
         name: openchami_cloud_init
       tags:
         - cloud_init
+
+    - name: Create and manage SMD groups
+      ansible.builtin.include_role:
+        name: configure_ochami
+        tasks_from: create_groups.yml
+      tags:
+        - openchami_commands
+
+    - name: Create common SMD groups
+      ansible.builtin.include_role:
+        name: configure_ochami
+        tasks_from: create_groups_common.yml
+      tags:
+        - openchami_commands
+
+    - name: Configure BSS boot parameters
+      ansible.builtin.include_role:
+        name: configure_ochami
+        tasks_from: configure_bss_cloud_init.yml
+      tags:
+        - cloud_init
+
+    - name: Discovery completion
+      ansible.builtin.include_role:
+        name: configure_ochami
+        tasks_from: discovery_completion.yml
+      tags:
+        - cloud_init
+        - always
+
+- name: Configure node roles
+  hosts: oim
+  connection: ssh
+  roles:
+    - role: nfs_client
+      tags: nfs_client
+    - role: k8s_config
+      tags: k8s_config
+    - role: slurm_config
+      tags: slurm_config
+    - role: openldap
+      tags: openldap
+    - role: telemetry
+      tags: telemetry
