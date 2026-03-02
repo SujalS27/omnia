@@ -15,7 +15,11 @@
 - name: Load global input defaults
   hosts: localhost
   gather_facts: false
-  tags: always
+  tags:
+    - always
+    - openchami_commands
+    - cloud_init
+    - input_project
   tasks:
     - ansible.builtin.include_vars:
         file: "{{ playbook_dir }}/../common/vars/global_input.yml"
@@ -27,20 +31,35 @@
     openchami_vars_support: true
     openchami_cloud_init_support: true
     omnia_metadata_support: true
+  tags:
+    - always
+    - openchami_commands
+    - cloud_init
+    - input_project
 
 - name: Create oim group and provision group
   ansible.builtin.import_playbook: ../utils/create_container_group.yml
   vars:
     oim_group: true
-  tags: always
+  tags:
+    - always
+    - openchami_commands
+    - cloud_init
+    - input_project
 
 - name: Generate functional groups configuration
   ansible.builtin.import_playbook: ../utils/generate_functional_groups.yml
-  tags: always
+  tags:
+    - always
+    - openchami_commands
+    - cloud_init
+    - input_project
 
 - name: Set_fact for fetch omnia config credentials
   hosts: localhost
   connection: local
+  tags:
+    - never
   tasks:
     - name: Set dynamic run tags including 'provision'
       when: not config_file_status | default(false) | bool
@@ -64,20 +83,24 @@
 - name: Invoke validate_config.yml to perform L1 and L2 validations
   when: not config_file_status | default(false) | bool
   ansible.builtin.import_playbook: ../input_validation/validate_config.yml
+  tags: never
 
 - name: Invoke get_config_credentials.yml
   when: not config_file_status | default(false) | bool
   ansible.builtin.import_playbook: ../utils/credential_utility/get_config_credentials.yml
+  tags: never
 
 - name: Validate discovery parameters
   hosts: localhost
   connection: local
+  tags: never
   roles:
     - discovery_validations
 
 - name: Validate OIM timezone
   hosts: oim
   connection: ssh
+  tags: never
   tasks:
     - name: Validate OIM timezone has not changed
       ansible.builtin.include_role:
@@ -87,18 +110,28 @@
 - name: Build cluster host lists from PXE mapping
   hosts: localhost
   connection: local
+  tags: never
   roles:
-    - passwordless_ssh
+    - discovery_validations
 
 - name: Configure OIM SSH from cluster host lists
   hosts: oim
   connection: ssh
+  tags: never
   roles:
-    - passwordless_ssh
+    - discovery_validations
 
 - name: Validate discovery parameters
   hosts: oim
   connection: ssh
+  tags: never
+  roles:
+    - discovery_validations
+
+- name: Validate discovery parameters
+  hosts: oim
+  connection: ssh
+  tags: never
   tasks:
     - name: Image validation
       ansible.builtin.include_role:
@@ -109,6 +142,9 @@
 - name: Configure auth for openchami
   hosts: oim
   connection: ssh
+  tags:
+    - openchami_commands
+    - cloud_init
   tasks:
     - name: Openchami cluster authentication
       ansible.builtin.include_tasks: "{{ playbook_dir }}/../common/tasks/common/openchami_auth.yml"

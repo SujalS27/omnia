@@ -14,12 +14,13 @@
 ---
 
 # Usage: discover_mapping_nodes.yml
-bmc_group_data_template: "{{ role_path }}/templates/nodes/bmc_group_data.csv.j2"
+bmc_group_data_template: "{{ role_path }}/../openchami_commands/templates/nodes/bmc_group_data.csv.j2"
+openchami_nodes_template: "{{ role_path }}/../openchami_commands/templates/nodes/nodes.yaml.j2"
 telemetry_share_path: "{{ hostvars['localhost']['oim_shared_path'] }}/omnia/telemetry"
 bmc_group_data_file: "{{ telemetry_share_path }}/bmc_group_data.csv"
 openchami_config_vars_path: "{{ openchami_share_path }}/configs_vars.yaml"
 discover_fail_msg: "Failed to discover nodes. Please verify the inputs provided in mapping file."
-openchami_hostname_template: "{{ role_path }}/templates/nodes/hostname.yaml.j2"
+openchami_hostname_template: "{{ role_path }}/../openchami_commands/templates/nodes/hostname.yaml.j2"
 openchami_hostname_vars_path: "{{ nodes_dir }}/hostname.yaml"
 
 # Usage: fetch_additional_images.yml and other tasks requiring software_config
