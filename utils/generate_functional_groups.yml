@@ -21,10 +21,17 @@
       ansible.builtin.include_vars:
         file: "{{ playbook_dir }}/../common/vars/global_input.yml"
 
+    - name: Resolve input_project_dir first
+      ansible.builtin.set_fact:
+        resolved_input_project_dir: "{{ omnia_input_dir }}/{{ project_name }}"
+
+    - name: Set fully resolved paths for functional groups generation
+      ansible.builtin.set_fact:
+        provision_config_file_resolved: "{{ resolved_input_project_dir }}/provision_config.yml"
+        omnia_config_file_resolved: "{{ resolved_input_project_dir }}/omnia_config.yml"
+        functional_groups_config_path_resolved: "/opt/omnia/.data/functional_groups_config.yml"
+        pxe_mapping_file_path_resolved: "{{ resolved_input_project_dir }}/pxe_mapping_file.csv"
+
     - name: Include generate_functional_groups role
       ansible.builtin.include_role:
         name: generate_functional_groups
-      vars:
-        provision_config_file: "{{ provision_config_file }}"
-        omnia_config_file: "{{ omnia_config_file }}"
-        functional_groups_config_path: "{{ functional_groups_config_path }}"
