@@ -41,8 +41,8 @@
     admin_nic_ip: "{{ network_data.admin_network.primary_oim_admin_ip }}"
     admin_nic: "{{ network_data.admin_network.oim_nic_name }}"
     admin_netmask_bits: "{{ network_data.admin_network.netmask_bits }}"
-    ib_network_subnet: "{{ network_data.ib_network.subnet }}"
-    dns: "{{ network_data.admin_network.dns }}"
+    ib_network_subnet: "{{ network_data.ib_network.subnet | default('') }}"
+    dns: "{{ network_data.admin_network.dns | default([]) }}"
 
 - name: Initialise variables
   ansible.builtin.set_fact:
