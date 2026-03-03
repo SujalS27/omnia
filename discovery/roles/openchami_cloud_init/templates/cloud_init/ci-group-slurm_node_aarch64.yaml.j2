@@ -307,14 +307,21 @@
 
             CTLD_SLURM_DIR_MNT="/mnt/slurm_ctld_etc_slurm"
             SLURM_CONF_PATH="$CTLD_SLURM_DIR_MNT/slurm.conf"
+            CTLD_HOST="{{ (ctld_list | default([])) | first | default('') }}"
 
-            echo "[INFO] Mounting controller slurm.conf from NFS: {{ cloud_init_nfs_path }}/{{ ctld_list[0] }}/etc/slurm -> $CTLD_SLURM_DIR_MNT"
-            mkdir -p "$CTLD_SLURM_DIR_MNT"
-            mount -t nfs "{{ cloud_init_nfs_path }}/{{ ctld_list[0] }}/etc/slurm" "$CTLD_SLURM_DIR_MNT" || {
-              echo "[WARN] Failed to mount controller slurm.conf directory, falling back to defaults."
+            if [ -n "$CTLD_HOST" ]; then
+              echo "[INFO] Mounting controller slurm.conf from NFS: {{ cloud_init_nfs_path }}/$CTLD_HOST/etc/slurm -> $CTLD_SLURM_DIR_MNT"
+              mkdir -p "$CTLD_SLURM_DIR_MNT"
+              mount -t nfs "{{ cloud_init_nfs_path }}/$CTLD_HOST/etc/slurm" "$CTLD_SLURM_DIR_MNT" || {
+                echo "[WARN] Failed to mount controller slurm.conf directory, falling back to defaults."
+                SRUN_RANGE="$DEFAULT_SRUN_RANGE"
+                SLURMD_PORT="$DEFAULT_SLURMD_PORT"
+              }
+            else
+              echo "[WARN] No controller host provided in ctld_list; using defaults for srun range and slurmd port."
               SRUN_RANGE="$DEFAULT_SRUN_RANGE"
               SLURMD_PORT="$DEFAULT_SLURMD_PORT"
-            }
+            fi
 
             if [ -f "$SLURM_CONF_PATH" ]; then
               echo "[INFO] Parsing SlurmdPort and SrunPortRange from $SLURM_CONF_PATH"
