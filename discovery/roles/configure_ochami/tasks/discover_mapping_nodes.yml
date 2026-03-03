@@ -56,7 +56,7 @@
         group_data: "{{ (lookup('file', hostvars['localhost']['functional_groups_config_path']) | from_yaml).groups }}"
 
     - name: Delete smd configuration
-      ansible.builtin.include_tasks: delete_smd_config.yml
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/roles/openchami_commands/tasks/delete_smd_config.yml"
 
     - name: Discover ochami nodes
       block:
