@@ -43,17 +43,15 @@
         cacheable: true
 
     - name: Hash the password
-      ansible.builtin.command: openssl passwd -6 "{{ hostvars['localhost']['provision_password'] }}"
+      ansible.builtin.command: openssl passwd -6 "{{ provision_password | default('omnia') }}"
       changed_when: false
       register: hashed_password_output
       no_log: true
-      when: hostvars['localhost']['provision_password'] is defined
 
     - name: Set hashed_password_output as fact for template access
       ansible.builtin.set_fact:
         hashed_password_output: "{{ hashed_password_output }}"
         cacheable: true
-      when: hostvars['localhost']['provision_password'] is defined
 
     - name: Load ci defaults template
       ansible.builtin.template:
