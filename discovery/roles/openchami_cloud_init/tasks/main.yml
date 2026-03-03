@@ -43,7 +43,7 @@
         cacheable: true
 
     - name: Hash the password
-      ansible.builtin.command: openssl passwd -6 "{{ provision_password | default('omnia') }}"
+      ansible.builtin.command: openssl passwd -6 "{{ hostvars['localhost']['provision_password'] | default('omnia', true) }}"
       changed_when: false
       register: hashed_password_output
       no_log: true
