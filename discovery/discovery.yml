@@ -167,6 +167,7 @@
   connection: ssh
   tags:
     - openchami_commands
+    - cloud_init
     - input_project
   pre_tasks:
     - name: Discover nodes
@@ -193,6 +194,7 @@
         name: openchami_cloud_init
       tags:
         - cloud_init
+        - openchami_commands
 
     - name: Create and manage SMD groups
       ansible.builtin.include_role:
@@ -219,6 +221,7 @@
         name: configure_ochami
         tasks_from: configure_bss_cloud_init.yml
       tags:
+        - cloud_init
         - openchami_commands
 
     - name: Discovery completion
