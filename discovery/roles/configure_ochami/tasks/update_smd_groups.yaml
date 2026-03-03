@@ -37,11 +37,13 @@
   when: smd_group_members | symmetric_difference(inventory_group_members) | length  > 0
 
 - name: DELETE group - {{ functional_group_name }}
+  environment: "{{ hostvars['oim']['ochami_env'] | default({}) }}"
   ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_delete }} {{ functional_group_name }}"
   changed_when: true
   when: smd_group_changed | default(false) | bool
 
 - name: POST group - {{ functional_group_name }}
+  environment: "{{ hostvars['oim']['ochami_env'] | default({}) }}"
   ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_add_members }} {{ inventory_group_members | join(',') }} {{ functional_group_name }}"
   changed_when: true
   when: smd_group_changed | default(false) | bool

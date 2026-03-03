@@ -36,6 +36,7 @@
     mode: "{{ hostvars['localhost']['dir_permissions_755'] }}"
 
 - name: Delete ochami bss boot params
+  environment: "{{ hostvars['oim']['ochami_env'] | default({}) }}"
   ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.bss_boot_params_delete }} -d '{\"macs\":[\"{{ item }}\"]}'"
   changed_when: false
   failed_when: false
@@ -46,6 +47,7 @@
   with_items: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
 
 - name: Verify boot params set
+  environment: "{{ hostvars['oim']['ochami_env'] | default({}) }}"
   ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.bss_boot_params_get }}"
   changed_when: false
   register: boot_params_output
