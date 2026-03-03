@@ -43,10 +43,10 @@ slurm_control_ssh_patterns: []
 slurm_node_ssh_patterns: []
 
 # Cloud-Init NFS Paths for Slurm Nodes
-cloud_init_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] }}:{{ hostvars['localhost']['slurm_nfs_path'] | default('/mnt/share/omnia') }}"
-cloud_init_slurm_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] }}:{{ hostvars['localhost']['slurm_nfs_path'] | default('/mnt/share/omnia') }}"
-cloud_init_nfs_path_openldap: "{{ hostvars['localhost']['ldap_nfs_server'] | default(hostvars['localhost']['slurm_nfs_server']) }}:{{ hostvars['localhost']['ldap_nfs_path'] | default('/mnt/share/openldap') }}"
-trackfile_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] }}:{{ hostvars['localhost']['slurm_nfs_path'] | default('/mnt/share/omnia') }}/track"
+cloud_init_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] | default('', true) }}:{{ hostvars['localhost']['slurm_nfs_path'] | default('/mnt/share/omnia') }}"
+cloud_init_slurm_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] | default('', true) }}:{{ hostvars['localhost']['slurm_nfs_path'] | default('/mnt/share/omnia') }}"
+cloud_init_nfs_path_openldap: "{{ hostvars['localhost']['ldap_nfs_server'] | default(hostvars['localhost']['slurm_nfs_server'] | default('', true), true) }}:{{ hostvars['localhost']['ldap_nfs_path'] | default('/mnt/share/openldap') }}"
+trackfile_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] | default('', true) }}:{{ hostvars['localhost']['slurm_nfs_path'] | default('/mnt/share/omnia') }}/track"
 client_mount_path: "/mnt/ldms"
 
 # IP Name Mapping for Cloud-Init
