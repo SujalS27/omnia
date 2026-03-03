@@ -100,7 +100,7 @@
 - name: Validate OIM timezone
   hosts: oim
   connection: ssh
-  tags: never
+  tags: always
   tasks:
     - name: Validate OIM timezone has not changed
       ansible.builtin.include_role:
