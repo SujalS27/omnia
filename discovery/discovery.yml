@@ -17,9 +17,6 @@
   gather_facts: false
   tags:
     - always
-    - openchami_commands
-    - cloud_init
-    - input_project
   tasks:
     - ansible.builtin.include_vars:
         file: "{{ playbook_dir }}/../common/vars/global_input.yml"
@@ -33,9 +30,6 @@
     omnia_metadata_support: true
   tags:
     - always
-    - openchami_commands
-    - cloud_init
-    - input_project
 
 - name: Create oim group and provision group
   ansible.builtin.import_playbook: ../utils/create_container_group.yml
@@ -43,17 +37,11 @@
     oim_group: true
   tags:
     - always
-    - openchami_commands
-    - cloud_init
-    - input_project
 
 - name: Generate functional groups configuration
   ansible.builtin.import_playbook: ../utils/generate_functional_groups.yml
   tags:
     - always
-    - openchami_commands
-    - cloud_init
-    - input_project
 
 - name: Set_fact for fetch omnia config credentials
   hosts: localhost
@@ -84,18 +72,12 @@
   when: not config_file_status | default(false) | bool
   tags:
     - always
-    - cloud_init
-    - openchami_commands
-    - input_project
   ansible.builtin.import_playbook: ../input_validation/validate_config.yml
 
 - name: Invoke get_config_credentials.yml
   when: not config_file_status | default(false) | bool
   tags:
     - always
-    - cloud_init
-    - openchami_commands
-    - input_project
   ansible.builtin.import_playbook: ../utils/credential_utility/get_config_credentials.yml
 
 - name: Validate discovery parameters
