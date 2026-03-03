@@ -87,6 +87,9 @@
     - openchami_commands
     - cloud_init
   tasks:
+    - name: Load discovery validation vars
+      ansible.builtin.include_vars: "{{ playbook_dir }}/roles/discovery_validations/vars/main.yml"
+
     - name: Set_fact for omnia_config_credentials.yml variables
       ansible.builtin.set_fact:
         provision_password: "{{ hostvars['localhost']['provision_password'] }}"
@@ -134,6 +137,9 @@
     - openchami_commands
     - cloud_init
   tasks:
+    - name: Load discovery validation vars
+      ansible.builtin.include_vars: "{{ playbook_dir }}/roles/discovery_validations/vars/main.yml"
+
     - name: Set_fact for omnia_config_credentials.yml variables
       ansible.builtin.set_fact:
         provision_password: "{{ hostvars['localhost']['provision_password'] }}"
