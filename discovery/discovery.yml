@@ -150,7 +150,7 @@
         tasks_from: validate_image.yml
       with_items: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
 
-- name: Configure auth for openchami
+- name: Openchami cluster authentication
   hosts: oim
   connection: ssh
   tags:
@@ -162,38 +162,20 @@
       vars:
         oim_node_name: "{{ hostvars['localhost']['oim_node_name'] }}"
 
-- name: Discover nodes, configure bss and cloud-init
+- name: OpenCHAMI Commands Execution
   hosts: oim
   connection: ssh
   tags:
     - openchami_commands
-    - cloud_init
-    - input_project
   pre_tasks:
     - name: Discover nodes
       ansible.builtin.include_role:
         name: configure_ochami
         tasks_from: discover_mapping_nodes.yml
-      tags:
-        - openchami_commands
   tasks:
-    - name: Load input project data
-      ansible.builtin.include_role:
-        name: openchami_input_project
-      tags:
-        - input_project
-
     - name: Run OpenChami commands
       ansible.builtin.include_role:
         name: openchami_commands
-      tags:
-        - openchami_commands
-
-    - name: Configure cloud-init
-      ansible.builtin.include_role:
-        name: openchami_cloud_init
-      tags:
-        - cloud_init
 
     - name: Create and manage SMD groups
       ansible.builtin.include_role:
@@ -202,8 +184,21 @@
       loop: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
       loop_control:
         loop_var: item
-      tags:
-        - openchami_commands
+
+    - name: Discovery completion
+      ansible.builtin.include_role:
+        name: configure_ochami
+        tasks_from: discovery_completion.yml
+
+- name: Cloud-init Configuration
+  hosts: oim
+  connection: ssh
+  tags:
+    - cloud_init
+  tasks:
+    - name: Configure cloud-init
+      ansible.builtin.include_role:
+        name: openchami_cloud_init
 
     - name: Create common SMD groups
       ansible.builtin.include_role:
@@ -212,22 +207,21 @@
       loop: "{{ common_cloud_init_groups }}"
       loop_control:
         loop_var: item
-      tags:
-        - openchami_commands
 
     - name: Configure BSS boot parameters
       ansible.builtin.include_role:
         name: configure_ochami
         tasks_from: configure_bss_cloud_init.yml
-      tags:
-        - cloud_init
 
-    - name: Discovery completion
+- name: Input Project Configuration
+  hosts: oim
+  connection: ssh
+  tags:
+    - input_project
+  tasks:
+    - name: Load input project data
       ansible.builtin.include_role:
-        name: configure_ochami
-        tasks_from: discovery_completion.yml
-      tags:
-        - openchami_commands
+        name: openchami_input_project
 
 - name: Configure node roles
   hosts: oim
