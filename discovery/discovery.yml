@@ -169,7 +169,6 @@
   connection: ssh
   tags:
     - openchami_commands
-    - cloud_init
     - input_project
   pre_tasks:
     - name: Discover nodes
@@ -227,7 +226,7 @@
         name: configure_ochami
         tasks_from: configure_bss_cloud_init.yml
       tags:
-        - cloud_init
+        - openchami_commands
         - always
 
     - name: Discovery completion
@@ -235,7 +234,7 @@
         name: configure_ochami
         tasks_from: discovery_completion.yml
       tags:
-        - cloud_init
+        - openchami_commands
         - always
 
 - name: Configure node roles
