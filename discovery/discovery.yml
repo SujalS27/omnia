@@ -82,10 +82,20 @@
 
 - name: Invoke validate_config.yml to perform L1 and L2 validations
   when: not config_file_status | default(false) | bool
+  tags:
+    - always
+    - cloud_init
+    - openchami_commands
+    - input_project
   ansible.builtin.import_playbook: ../input_validation/validate_config.yml
 
 - name: Invoke get_config_credentials.yml
   when: not config_file_status | default(false) | bool
+  tags:
+    - always
+    - cloud_init
+    - openchami_commands
+    - input_project
   ansible.builtin.import_playbook: ../utils/credential_utility/get_config_credentials.yml
 
 - name: Validate discovery parameters
