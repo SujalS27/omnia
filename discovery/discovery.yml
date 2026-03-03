@@ -110,7 +110,7 @@
 - name: Build cluster host lists from PXE mapping
   hosts: localhost
   connection: local
-  tags: never
+  tags: always
   roles:
     - discovery_validations
 
