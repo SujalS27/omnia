@@ -26,9 +26,11 @@
     nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
 
 - name: Delete the SMD common group - {{ common_group_name }}
+  environment: "{{ hostvars['oim']['ochami_env'] | default({}) }}"
   ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_delete }} {{ common_group_name }}"
   changed_when: true
 
 - name: POST common SMD group
+  environment: "{{ hostvars['oim']['ochami_env'] | default({}) }}"
   ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_add_yaml }} @{{ nodes_dir }}/groups-common-{{ common_group_name }}.yml"
   changed_when: true

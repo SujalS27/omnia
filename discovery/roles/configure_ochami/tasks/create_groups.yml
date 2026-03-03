@@ -18,6 +18,7 @@
     functional_group_name: "{{ item }}"
 
 - name: Load the openchami groups.yaml
+  environment: "{{ hostvars['oim']['ochami_env'] | default({}) }}"
   ansible.builtin.template:
     src: "{{ openchami_groups_template }}"
     dest: "{{ nodes_dir }}/groups-{{ functional_group_name }}.yml"
@@ -26,6 +27,7 @@
     nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
 
 - name: Get SMD group data
+  environment: "{{ hostvars['oim']['ochami_env'] | default({}) }}"
   ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_get }}"
   changed_when: false
   register: smd_group_data
@@ -39,6 +41,7 @@
     existing_smd_group_names: "{{ existing_smd_groups | map(attribute='label') | list }}"
 
 - name: POST new SMD groups
+  environment: "{{ hostvars['oim']['ochami_env'] | default({}) }}"
   ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_add_yaml }} @{{ nodes_dir }}/groups-{{ functional_group_name }}.yml"
   changed_when: true
   when: functional_group_name not in existing_smd_group_names
