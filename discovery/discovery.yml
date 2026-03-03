@@ -91,6 +91,10 @@
 - name: Validate discovery parameters
   hosts: localhost
   connection: local
+  tags:
+    - always
+    - cloud_init
+    - openchami_commands
   roles:
     - discovery_validations
 
@@ -106,6 +110,10 @@
 - name: Build cluster host lists from PXE mapping
   hosts: localhost
   connection: local
+  tags:
+    - always
+    - cloud_init
+    - openchami_commands
   roles:
     - discovery_validations
 
