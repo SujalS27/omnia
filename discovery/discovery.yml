@@ -186,6 +186,9 @@
       ansible.builtin.include_role:
         name: configure_ochami
         tasks_from: create_groups.yml
+      loop: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
+      loop_control:
+        loop_var: item
       tags:
         - openchami_commands
         - always
@@ -194,6 +197,9 @@
       ansible.builtin.include_role:
         name: configure_ochami
         tasks_from: create_groups_common.yml
+      loop: "{{ common_cloud_init_groups }}"
+      loop_control:
+        loop_var: item
       tags:
         - openchami_commands
         - always
