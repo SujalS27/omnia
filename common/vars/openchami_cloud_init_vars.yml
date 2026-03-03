@@ -56,5 +56,8 @@ ldap_search_base: ""
 ldap_default_bind_dn: ""
 password: ""
 
+# Slurm controller list default
+ctld_list: "{{ hostvars['localhost']['ctld_list'] | default([]) }}"
+
 # IP Name Mapping for Cloud-Init
 ip_name_map: "{{ hostvars['localhost']['read_mapping_file']['dict'] | default({}) }}"
