@@ -91,14 +91,12 @@
 - name: Validate discovery parameters
   hosts: localhost
   connection: local
-  tags: never
   roles:
     - discovery_validations
 
 - name: Validate OIM timezone
   hosts: oim
   connection: ssh
-  tags: never
   tasks:
     - name: Validate OIM timezone has not changed
       ansible.builtin.include_role:
