@@ -15,6 +15,9 @@
 - name: Include openchami commands
   ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
 
+- name: Include openchami vars
+  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_vars.yml"
+
 - name: Configure the ochami
   environment: "{{ hostvars['oim']['ochami_env'] | default({}) }}"
   block:
