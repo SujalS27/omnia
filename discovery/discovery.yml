@@ -154,6 +154,10 @@
 - name: Discover nodes, configure bss and cloud-init
   hosts: oim
   connection: ssh
+  tags:
+    - openchami_commands
+    - cloud_init
+    - input_project
   pre_tasks:
     - name: Discover nodes
       ansible.builtin.include_role:
@@ -168,19 +172,20 @@
         name: openchami_input_project
       tags:
         - input_project
-        - always
 
     - name: Run OpenChami commands
       ansible.builtin.include_role:
         name: openchami_commands
       tags:
         - openchami_commands
+        - always
 
     - name: Configure cloud-init
       ansible.builtin.include_role:
         name: openchami_cloud_init
       tags:
         - cloud_init
+        - always
 
     - name: Create and manage SMD groups
       ansible.builtin.include_role:
@@ -188,6 +193,7 @@
         tasks_from: create_groups.yml
       tags:
         - openchami_commands
+        - always
 
     - name: Create common SMD groups
       ansible.builtin.include_role:
@@ -195,6 +201,7 @@
         tasks_from: create_groups_common.yml
       tags:
         - openchami_commands
+        - always
 
     - name: Configure BSS boot parameters
       ansible.builtin.include_role:
@@ -202,6 +209,7 @@
         tasks_from: configure_bss_cloud_init.yml
       tags:
         - cloud_init
+        - always
 
     - name: Discovery completion
       ansible.builtin.include_role:
