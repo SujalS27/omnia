@@ -194,7 +194,6 @@
         name: openchami_cloud_init
       tags:
         - cloud_init
-        - openchami_commands
 
     - name: Create and manage SMD groups
       ansible.builtin.include_role:
@@ -222,7 +221,6 @@
         tasks_from: configure_bss_cloud_init.yml
       tags:
         - cloud_init
-        - openchami_commands
 
     - name: Discovery completion
       ansible.builtin.include_role:
