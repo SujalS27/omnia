@@ -42,6 +42,11 @@
         read_ssh_key: "{{ read_ssh_key }}"
         cacheable: true
 
+    - name: Ensure provision_password is available
+      ansible.builtin.fail:
+        msg: "provision_password not loaded; run full discovery to load credentials"
+      when: hostvars['localhost']['provision_password'] is not defined
+
     - name: Hash the password
       ansible.builtin.command: openssl passwd -6 "{{ hostvars['localhost']['provision_password'] }}"
       changed_when: false
