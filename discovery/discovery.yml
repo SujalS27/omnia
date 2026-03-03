@@ -83,12 +83,10 @@
 - name: Invoke validate_config.yml to perform L1 and L2 validations
   when: not config_file_status | default(false) | bool
   ansible.builtin.import_playbook: ../input_validation/validate_config.yml
-  tags: never
 
 - name: Invoke get_config_credentials.yml
   when: not config_file_status | default(false) | bool
   ansible.builtin.import_playbook: ../utils/credential_utility/get_config_credentials.yml
-  tags: never
 
 - name: Validate discovery parameters
   hosts: localhost
@@ -110,7 +108,6 @@
 - name: Build cluster host lists from PXE mapping
   hosts: localhost
   connection: local
-  tags: never
   roles:
     - discovery_validations
 
