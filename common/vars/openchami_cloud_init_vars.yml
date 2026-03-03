@@ -49,5 +49,12 @@ cloud_init_nfs_path_openldap: "{{ hostvars['localhost']['ldap_nfs_server'] | def
 trackfile_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] | default('', true) }}:{{ hostvars['localhost']['slurm_nfs_path'] | default('/mnt/share/omnia') }}/track"
 client_mount_path: "/mnt/ldms"
 
+# Cloud-Init LDAP defaults to avoid undefined template failures
+connection_type: "tls"
+ldap_server_ip: ""
+ldap_search_base: ""
+ldap_default_bind_dn: ""
+password: ""
+
 # IP Name Mapping for Cloud-Init
 ip_name_map: "{{ hostvars['localhost']['read_mapping_file']['dict'] | default({}) }}"
