@@ -228,11 +228,6 @@
       loop_control:
         loop_var: item
 
-    - name: Discovery completion
-      ansible.builtin.include_role:
-        name: configure_ochami
-        tasks_from: discovery_completion.yml
-
 - name: Cloud-init Configuration
   hosts: oim
   connection: ssh
@@ -280,3 +275,15 @@
       tags: openldap
     - role: telemetry
       tags: telemetry
+
+- name: Discovery completion
+  hosts: oim
+  connection: ssh
+  tags:
+    - openchami_commands
+    - cloud_init
+  tasks:
+    - name: Discovery completion
+      ansible.builtin.include_role:
+        name: configure_ochami
+        tasks_from: discovery_completion.yml
