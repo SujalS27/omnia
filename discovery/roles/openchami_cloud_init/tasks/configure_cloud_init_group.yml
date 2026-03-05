@@ -19,6 +19,13 @@
 - name: Include vars from default
   ansible.builtin.include_vars: "{{ default_file_path }}"
 
+- name: Ensure cloud-init NFS path uses slurm facts when available
+  ansible.builtin.set_fact:
+    cloud_init_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] }}:{{ hostvars['localhost']['slurm_nfs_path'] }}"
+  when:
+    - hostvars['localhost']['slurm_nfs_server'] is defined
+    - hostvars['localhost']['slurm_nfs_path'] is defined
+
 - name: Set the functional_group_name
   ansible.builtin.set_fact:
     functional_group_name: "{{ item }}"
