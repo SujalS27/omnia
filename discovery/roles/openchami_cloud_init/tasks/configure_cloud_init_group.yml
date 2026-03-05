@@ -30,6 +30,16 @@
     - hostvars['localhost']['slurm_cluster'] is defined
     - hostvars['localhost']['nfs_client_params'] is defined
 
+- name: Debug NFS facts and inputs (localhost)
+  ansible.builtin.debug:
+    msg:
+      slurm_cluster: "{{ hostvars['localhost']['slurm_cluster'] | default('unset') }}"
+      nfs_client_params: "{{ hostvars['localhost']['nfs_client_params'] | default('unset') }}"
+      slurm_nfs_server: "{{ hostvars['localhost']['slurm_nfs_server'] | default('unset') }}"
+      slurm_nfs_path: "{{ hostvars['localhost']['slurm_nfs_path'] | default('unset') }}"
+  delegate_to: localhost
+  run_once: true
+
 - name: Include openchami cloud-init vars
   ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_cloud_init_vars.yml"
 
