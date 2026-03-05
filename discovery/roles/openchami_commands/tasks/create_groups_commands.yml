@@ -40,5 +40,5 @@
   when: functional_group_name not in existing_smd_group_names
 
 - name: Check for group updates
-  ansible.builtin.include_tasks: "{{ role_path }}/tasks/update_smd_groups.yaml"
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/roles/configure_ochami/tasks/update_smd_groups.yaml"
   when: functional_group_name in existing_smd_group_names
