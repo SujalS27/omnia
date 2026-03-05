@@ -20,7 +20,7 @@
   ansible.builtin.include_vars: "{{ openchami_config_vars_path }}"
 
 - name: Delete smd configuration
-  ansible.builtin.include_tasks: "{{ role_path }}/delete_smd_config.yml"
+  ansible.builtin.include_tasks: "{{ role_path }}/tasks/delete_smd_config.yml"
 
 - name: Discover ochami nodes
   environment: "{{ hostvars['oim']['ochami_env'] | default({}) }}"
