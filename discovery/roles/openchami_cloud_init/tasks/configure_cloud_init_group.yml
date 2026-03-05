@@ -13,6 +13,12 @@
 # limitations under the License.
 ---
 
+- name: Load storage_config for NFS parameters (localhost)
+  ansible.builtin.include_vars:
+    file: "{{ hostvars['localhost']['input_project_dir'] }}/storage_config.yml"
+  delegate_to: localhost
+  run_once: true
+
 - name: Derive slurm NFS facts from storage_config when not set
   ansible.builtin.set_fact:
     slurm_nfs_server: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', hostvars['localhost']['slurm_cluster'][0].nfs_storage_name) | first).server_ip }}"
