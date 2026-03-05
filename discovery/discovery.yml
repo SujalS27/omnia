@@ -211,10 +211,14 @@
   tags:
     - openchami_commands
   pre_tasks:
-    - name: Discover nodes
+    - name: Prepare OpenChami discovery artifacts
       ansible.builtin.include_role:
         name: configure_ochami
         tasks_from: discover_mapping_nodes.yml
+    - name: Run OpenChami discovery commands
+      ansible.builtin.include_role:
+        name: openchami_commands
+        tasks_from: discover_mapping_nodes_commands.yml
   tasks:
     - name: Run OpenChami commands
       ansible.builtin.include_role:

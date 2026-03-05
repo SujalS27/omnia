@@ -93,3 +93,4 @@
     - name: Configure the hostname
       ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_node_set }} @\"{{ openchami_hostname_vars_path }}\""
       changed_when: true
+      
