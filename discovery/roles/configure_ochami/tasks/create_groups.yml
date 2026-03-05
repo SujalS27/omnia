@@ -25,27 +25,3 @@
     mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
   vars:
     nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
-
-- name: Get SMD group data
-  environment: "{{ hostvars['oim']['ochami_env'] | default({}) }}"
-  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_get }}"
-  changed_when: false
-  register: smd_group_data
-
-- name: Set existing_smd_groups
-  ansible.builtin.set_fact:
-    existing_smd_groups: '{{ smd_group_data.stdout | from_json }}'
-
-- name: Get existing SMD groups
-  ansible.builtin.set_fact:
-    existing_smd_group_names: "{{ existing_smd_groups | map(attribute='label') | list }}"
-
-- name: POST new SMD groups
-  environment: "{{ hostvars['oim']['ochami_env'] | default({}) }}"
-  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_add_yaml }} @{{ nodes_dir }}/groups-{{ functional_group_name }}.yml"
-  changed_when: true
-  when: functional_group_name not in existing_smd_group_names
-
-- name: Check for group updates
-  ansible.builtin.include_tasks: update_smd_groups.yaml
-  when: functional_group_name in existing_smd_group_names

@@ -232,6 +232,14 @@
       loop_control:
         loop_var: item
 
+    - name: Apply SMD group commands
+      ansible.builtin.include_role:
+        name: openchami_commands
+        tasks_from: create_groups_commands.yml
+      loop: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
+      loop_control:
+        loop_var: item
+
 - name: Cloud-init Configuration
   hosts: oim
   connection: ssh
