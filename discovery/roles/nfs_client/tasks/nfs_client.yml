@@ -27,6 +27,11 @@
     nfs_server_ip: "{{ item.server_ip }}"
   when: item.server_ip != "localhost"
 
+- name: Fail if server_ip is missing or empty
+  ansible.builtin.fail:
+    msg: "NFS server_ip is missing for share {{ item.server_share_path | default('') }}; update storage_config.yml with a valid server_ip."
+  when: item.server_ip is not defined or (item.server_ip | string | trim) | length == 0
+
 - name: Fetch server_ip and server_share_path from list when nfs sever is localhost
   ansible.builtin.set_fact:
     nfs_server_ip: "{{ hostvars['127.0.0.1']['admin_nic_ip'] }}"
@@ -40,6 +45,11 @@
 - name: Mount facts items to dict
   ansible.builtin.set_fact:
     nfs_src: "{{ nfs_server_ip }}:{{ item.server_share_path }}"
+
+- name: Fail if nfs_src is invalid (missing server)
+  ansible.builtin.fail:
+    msg: "Invalid NFS source '{{ nfs_src }}'. Ensure server_ip is set for {{ item.server_share_path }} in storage_config.yml."
+  when: nfs_src | regex_search('^:')
 
 - name: Create the directory for mounting NFS client with server_share_path as client_share_path
   ansible.builtin.file:
