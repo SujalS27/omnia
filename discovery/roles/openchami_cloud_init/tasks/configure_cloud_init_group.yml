@@ -23,10 +23,6 @@
   ansible.builtin.set_fact:
     functional_group_name: "{{ item }}"
 
-- name: NFS path for cloud init
-  ansible.builtin.set_fact:
-    cloud_init_nfs_path: "{{ nfs_server_ip }}:{{ nfs_server_path }}/slurm"
-
 - name: Delete ci group configuration - {{ functional_group_name }}
   ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_group_delete }} @{{ cloud_init_dir }}/ci-group-{{ functional_group_name }}.yaml"
   changed_when: true
