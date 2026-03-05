@@ -56,6 +56,13 @@
     nfs_server_ip: "{{ (nfs_client_params | selectattr('nfs_name', 'equalto', nfs_storage_name) | first).server_ip }}"
     nfs_server_path: "{{ (nfs_client_params | selectattr('nfs_name', 'equalto', nfs_storage_name) | first).server_share_path }}"
 
+- name: Expose slurm NFS server and path to localhost for cloud-init
+  ansible.builtin.set_fact:
+    slurm_nfs_server: "{{ nfs_server_ip }}"
+    slurm_nfs_path: "{{ nfs_server_path }}"
+  delegate_to: localhost
+  run_once: true
+
 - name: Set facts for slurm
   ansible.builtin.set_fact:
     cluster_name: "{{ slurm_cluster[0].cluster_name }}"
