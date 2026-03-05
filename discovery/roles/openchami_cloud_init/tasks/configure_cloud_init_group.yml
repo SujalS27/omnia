@@ -13,11 +13,33 @@
 # limitations under the License.
 ---
 
+- name: Derive slurm NFS facts from storage_config when not set
+  ansible.builtin.set_fact:
+    slurm_nfs_server: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', hostvars['localhost']['slurm_cluster'][0].nfs_storage_name) | first).server_ip }}"
+    slurm_nfs_path: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', hostvars['localhost']['slurm_cluster'][0].nfs_storage_name) | first).server_share_path }}"
+  delegate_to: localhost
+  run_once: true
+  when:
+    - hostvars['localhost']['slurm_nfs_server'] | default('') | string == ''
+    - hostvars['localhost']['slurm_cluster'] is defined
+    - hostvars['localhost']['nfs_client_params'] is defined
+
 - name: Include openchami cloud-init vars
   ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_cloud_init_vars.yml"
 
 - name: Include vars from default
   ansible.builtin.include_vars: "{{ default_file_path }}"
+
+- name: Fail if slurm NFS server/path are still unset
+  ansible.builtin.fail:
+    msg: "slurm_nfs_server/path are not defined; ensure storage_config nfs_name {{ hostvars['localhost']['slurm_cluster'][0].nfs_storage_name }} exists"
+  when:
+    - hostvars['localhost']['slurm_nfs_server'] | default('') | string == ''
+      or hostvars['localhost']['slurm_nfs_path'] | default('') | string == ''
+
+- name: Set cloud-init NFS path from slurm facts
+  ansible.builtin.set_fact:
+    cloud_init_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] }}:{{ hostvars['localhost']['slurm_nfs_path'] }}"
 
 - name: Set the functional_group_name
   ansible.builtin.set_fact:
