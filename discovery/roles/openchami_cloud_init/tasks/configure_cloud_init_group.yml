@@ -24,6 +24,7 @@
     slurm_nfs_server: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', hostvars['localhost']['slurm_cluster'][0].nfs_storage_name) | first).server_ip }}"
     slurm_nfs_path: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', hostvars['localhost']['slurm_cluster'][0].nfs_storage_name) | first).server_share_path }}"
   delegate_to: localhost
+  delegate_facts: true
   run_once: true
   when:
     - hostvars['localhost']['slurm_nfs_server'] | default('') | string == ''
