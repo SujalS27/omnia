@@ -22,18 +22,17 @@
 - name: Define local_repo access config path
   ansible.builtin.set_fact:
     local_repo_access_config_file: "{{ local_repo_access_config_file | default('/opt/omnia/provision/local_repo_access.yml') }}"
-  delegate_to: localhost
   run_once: true
 
 - name: Check for local_repo access configuration
   ansible.builtin.stat:
-    path: "{{ hostvars['localhost']['local_repo_access_config_file'] }}"
+    path: "{{ local_repo_access_config_file }}"
   delegate_to: localhost
   run_once: true
   register: local_repo_access_file
 
 - name: Include local_repo access vars when present
-  ansible.builtin.include_vars: "{{ hostvars['localhost']['local_repo_access_config_file'] }}"
+  ansible.builtin.include_vars: "{{ local_repo_access_config_file }}"
   delegate_to: localhost
   run_once: true
   when: local_repo_access_file.stat.exists
@@ -41,7 +40,7 @@
 - name: Fail if local_repo access configuration is missing
   ansible.builtin.fail:
     msg: >-
-      offline repo access configuration was not found at '{{ hostvars['localhost']['local_repo_access_config_file'] }}'.
+      offline repo access configuration was not found at '{{ local_repo_access_config_file }}'.
       Run local_repo.yml or provide the file so offline paths (pip/tarball/git) can be referenced in cloud-init templates.
   when: not local_repo_access_file.stat.exists
 
