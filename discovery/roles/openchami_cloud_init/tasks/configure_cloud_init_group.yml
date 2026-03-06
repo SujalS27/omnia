@@ -31,18 +31,37 @@
     - hostvars['localhost']['slurm_cluster'] is defined
     - hostvars['localhost']['nfs_client_params'] is defined
 
-- name: Derive k8s NFS facts from storage_config when not set
+- name: Derive k8s NFS name to lookup
   ansible.builtin.set_fact:
-    k8s_nfs_server_ip: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', hostvars['localhost']['service_k8s_cluster'][0].nfs_storage_name) | first).server_ip }}"
-    k8s_server_share_path: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', hostvars['localhost']['service_k8s_cluster'][0].nfs_storage_name) | first).server_share_path }}"
-    k8s_client_mount_path: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', hostvars['localhost']['service_k8s_cluster'][0].nfs_storage_name) | first).client_share_path }}"
+    k8s_nfs_name: "{{ (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name | default('nfs_k8s') }}"
   delegate_to: localhost
   delegate_facts: true
   run_once: true
   when:
     - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string == ''
-    - hostvars['localhost']['service_k8s_cluster'] is defined
     - hostvars['localhost']['nfs_client_params'] is defined
+
+- name: Derive k8s NFS facts from storage_config when not set
+  ansible.builtin.set_fact:
+    k8s_nfs_entry: "{{ hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', hostvars['localhost']['k8s_nfs_name']) | list | first | default({}) }}"
+    k8s_nfs_server_ip: "{{ k8s_nfs_entry.server_ip | default('') }}"
+    k8s_server_share_path: "{{ k8s_nfs_entry.server_share_path | default('') }}"
+    k8s_client_mount_path: "{{ k8s_nfs_entry.client_share_path | default('') }}"
+  delegate_to: localhost
+  delegate_facts: true
+  run_once: true
+  when:
+    - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string == ''
+    - hostvars['localhost']['nfs_client_params'] is defined
+
+- name: Fail if k8s NFS server/path are unset or nfs_name not found
+  ansible.builtin.fail:
+    msg: >-
+      k8s NFS details are not defined. Ensure storage_config contains nfs_name '{{ hostvars['localhost']['k8s_nfs_name'] | default('nfs_k8s') }}'
+      with server_ip/server_share_path/client_share_path.
+  when:
+    - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string == ''
+      or hostvars['localhost']['k8s_server_share_path'] | default('') | string == ''
 
 - name: Include openchami cloud-init vars
   ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_cloud_init_vars.yml"
