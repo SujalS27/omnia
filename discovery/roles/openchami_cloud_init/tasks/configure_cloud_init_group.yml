@@ -31,36 +31,23 @@
     - hostvars['localhost']['slurm_cluster'] is defined
     - hostvars['localhost']['nfs_client_params'] is defined
 
-- name: Derive k8s NFS name to lookup
+- name: Derive k8s facts (nfs, crio, pulp, admin) on localhost
   ansible.builtin.set_fact:
     k8s_nfs_name: "{{ (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name | default('nfs_k8s') }}"
+    k8s_nfs_entry: "{{ hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name | default('nfs_k8s')) | list | first | default({}) }}"
+    k8s_nfs_server_ip: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name | default('nfs_k8s')) | first).server_ip | default('') }}"
+    k8s_server_share_path: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name | default('nfs_k8s')) | first).server_share_path | default('') }}"
+    k8s_client_mount_path: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name | default('nfs_k8s')) | first).client_share_path | default('') }}"
     k8s_crio_storage_size: "{{ (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].k8s_crio_storage_size | default('20G') }}"
+    admin_nic_ip: "{{ hostvars['localhost']['admin_nic_ip'] | default('') }}"
+    admin_netmask_bits: "{{ hostvars['localhost']['admin_netmask_bits'] | default('') }}"
+    admin_nic_cidr: "{{ (hostvars['localhost']['admin_nic_ip'] | default('') ~ '/' ~ hostvars['localhost']['admin_netmask_bits'] | default('')) | ansible.utils.ipaddr('network/prefix') if (hostvars['localhost']['admin_nic_ip'] is defined and hostvars['localhost']['admin_netmask_bits'] is defined and hostvars['localhost']['admin_nic_ip']|string != '' and hostvars['localhost']['admin_netmask_bits']|string != '') else '' }}"
     pulp_mirror: "{{ hostvars['localhost']['admin_nic_ip'] | default('') }}:2225"
   delegate_to: localhost
   delegate_facts: true
   run_once: true
   when:
     - hostvars['localhost']['nfs_client_params'] is defined
-
-- name: Derive k8s NFS facts from storage_config when not set
-  ansible.builtin.set_fact:
-    k8s_nfs_entry: "{{ hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', hostvars['localhost']['k8s_nfs_name']) | list | first | default({}) }}"
-  delegate_to: localhost
-  delegate_facts: true
-  run_once: true
-  when:
-    - hostvars['localhost']['nfs_client_params'] is defined
-
-- name: Set k8s NFS server/path facts from derived entry
-  ansible.builtin.set_fact:
-    k8s_nfs_server_ip: "{{ hostvars['localhost']['k8s_nfs_entry']['server_ip'] | default('') }}"
-    k8s_server_share_path: "{{ hostvars['localhost']['k8s_nfs_entry']['server_share_path'] | default('') }}"
-    k8s_client_mount_path: "{{ hostvars['localhost']['k8s_nfs_entry']['client_share_path'] | default('') }}"
-  delegate_to: localhost
-  delegate_facts: true
-  run_once: true
-  when:
-    - hostvars['localhost']['k8s_nfs_entry'] is defined
 
 - name: Propagate k8s NFS facts to all hosts
   ansible.builtin.set_fact:
@@ -69,10 +56,15 @@
     k8s_client_mount_path: "{{ hostvars['localhost']['k8s_client_mount_path'] | default('') }}"
     k8s_crio_storage_size: "{{ hostvars['localhost']['k8s_crio_storage_size'] | default('20G') }}"
     pulp_mirror: "{{ hostvars['localhost']['pulp_mirror'] | default('') }}"
-  delegate_to: "{{ item }}"
+    admin_nic_ip: "{{ hostvars['localhost']['admin_nic_ip'] | default('') }}"
+    admin_netmask_bits: "{{ hostvars['localhost']['admin_netmask_bits'] | default('') }}"
+    admin_nic_cidr: "{{ hostvars['localhost']['admin_nic_cidr'] | default('') }}"
+  delegate_to: "{{ host_item }}"
   delegate_facts: true
   run_once: true
   loop: "{{ ansible_play_hosts_all | default(ansible_play_hosts) }}"
+  loop_control:
+    loop_var: host_item
   when:
     - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string != ''
     - hostvars['localhost']['k8s_server_share_path'] | default('') | string != ''
@@ -95,20 +87,12 @@
       k8s_server_share_path: "{{ hostvars['localhost']['k8s_server_share_path'] | default('') }}"
       k8s_client_mount_path: "{{ hostvars['localhost']['k8s_client_mount_path'] | default('') }}"
       k8s_crio_storage_size: "{{ hostvars['localhost']['k8s_crio_storage_size'] | default('') }}"
+      admin_nic_ip: "{{ hostvars['localhost']['admin_nic_ip'] | default('') }}"
+      admin_netmask_bits: "{{ hostvars['localhost']['admin_netmask_bits'] | default('') }}"
+      admin_nic_cidr: "{{ hostvars['localhost']['admin_nic_cidr'] | default('') }}"
   run_once: true
   delegate_to: localhost
   when: ansible_verbosity | default(0) | int > 0
-
-- name: Ensure k8s NFS facts exist on current host
-  ansible.builtin.set_fact:
-    k8s_nfs_server_ip: "{{ hostvars['localhost']['k8s_nfs_server_ip'] | default('') }}"
-    k8s_server_share_path: "{{ hostvars['localhost']['k8s_server_share_path'] | default('') }}"
-    k8s_client_mount_path: "{{ hostvars['localhost']['k8s_client_mount_path'] | default('') }}"
-    k8s_crio_storage_size: "{{ hostvars['localhost']['k8s_crio_storage_size'] | default('20G') }}"
-    pulp_mirror: "{{ hostvars['localhost']['pulp_mirror'] | default('') }}"
-  when:
-    - k8s_nfs_server_ip is not defined or k8s_nfs_server_ip | string == ''
-    - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string != ''
 
 - name: Fail if pulp_mirror is unset
   ansible.builtin.fail:
@@ -117,6 +101,14 @@
       or set pulp_mirror explicitly before rendering cloud-init templates.
   when:
     - hostvars['localhost']['pulp_mirror'] | default('') | string == ''
+
+- name: Fail if admin_nic_ip or netmask are unset
+  ansible.builtin.fail:
+    msg: >-
+      admin_nic_ip/admin_netmask_bits are not defined. Ensure network_spec was loaded (prepare_oim/discovery) so admin network facts are available.
+  when:
+    - hostvars['localhost']['admin_nic_ip'] | default('') | string == ''
+      or hostvars['localhost']['admin_netmask_bits'] | default('') | string == ''
 
 - name: Include openchami cloud-init vars
   ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_cloud_init_vars.yml"
