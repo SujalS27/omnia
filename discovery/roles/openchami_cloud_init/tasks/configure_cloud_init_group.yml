@@ -38,7 +38,6 @@
   delegate_facts: true
   run_once: true
   when:
-    - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string == ''
     - hostvars['localhost']['nfs_client_params'] is defined
 
 - name: Derive k8s NFS facts from storage_config when not set
@@ -48,7 +47,6 @@
   delegate_facts: true
   run_once: true
   when:
-    - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string == ''
     - hostvars['localhost']['nfs_client_params'] is defined
 
 - name: Set k8s NFS server/path facts from derived entry
@@ -60,7 +58,6 @@
   delegate_facts: true
   run_once: true
   when:
-    - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string == ''
     - hostvars['localhost']['k8s_nfs_entry'] is defined
 
 - name: Fail if k8s NFS server/path are unset or nfs_name not found
