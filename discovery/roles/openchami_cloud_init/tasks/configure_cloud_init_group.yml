@@ -82,6 +82,27 @@
     - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string == ''
       or hostvars['localhost']['k8s_server_share_path'] | default('') | string == ''
 
+- name: Debug k8s NFS facts on localhost
+  ansible.builtin.debug:
+    msg:
+      k8s_nfs_name: "{{ hostvars['localhost']['k8s_nfs_name'] | default('') }}"
+      k8s_nfs_entry: "{{ hostvars['localhost']['k8s_nfs_entry'] | default({}) }}"
+      k8s_nfs_server_ip: "{{ hostvars['localhost']['k8s_nfs_server_ip'] | default('') }}"
+      k8s_server_share_path: "{{ hostvars['localhost']['k8s_server_share_path'] | default('') }}"
+      k8s_client_mount_path: "{{ hostvars['localhost']['k8s_client_mount_path'] | default('') }}"
+  run_once: true
+  delegate_to: localhost
+  when: ansible_verbosity | default(0) | int > 0
+
+- name: Ensure k8s NFS facts exist on current host
+  ansible.builtin.set_fact:
+    k8s_nfs_server_ip: "{{ hostvars['localhost']['k8s_nfs_server_ip'] | default('') }}"
+    k8s_server_share_path: "{{ hostvars['localhost']['k8s_server_share_path'] | default('') }}"
+    k8s_client_mount_path: "{{ hostvars['localhost']['k8s_client_mount_path'] | default('') }}"
+  when:
+    - k8s_nfs_server_ip is not defined or k8s_nfs_server_ip | string == ''
+    - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string != ''
+
 - name: Include openchami cloud-init vars
   ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_cloud_init_vars.yml"
 
