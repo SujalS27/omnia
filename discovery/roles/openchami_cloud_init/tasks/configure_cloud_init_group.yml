@@ -44,9 +44,9 @@
 - name: Derive k8s NFS facts from storage_config when not set
   ansible.builtin.set_fact:
     k8s_nfs_entry: "{{ hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', hostvars['localhost']['k8s_nfs_name']) | list | first | default({}) }}"
-    k8s_nfs_server_ip: "{{ k8s_nfs_entry.server_ip | default('') }}"
-    k8s_server_share_path: "{{ k8s_nfs_entry.server_share_path | default('') }}"
-    k8s_client_mount_path: "{{ k8s_nfs_entry.client_share_path | default('') }}"
+    k8s_nfs_server_ip: "{{ k8s_nfs_entry['server_ip'] | default('') }}"
+    k8s_server_share_path: "{{ k8s_nfs_entry['server_share_path'] | default('') }}"
+    k8s_client_mount_path: "{{ k8s_nfs_entry['client_share_path'] | default('') }}"
   delegate_to: localhost
   delegate_facts: true
   run_once: true
