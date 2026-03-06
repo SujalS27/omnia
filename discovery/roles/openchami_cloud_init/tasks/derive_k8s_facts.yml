@@ -45,6 +45,7 @@
     enable_k8s_ha: "{{ hostvars['localhost']['enable_k8s_ha'] | default(false) }}"
     kube_vip: "{{ hostvars['localhost']['kube_vip'] | default('') }}"
     service_k8s_version: "{{ hostvars['localhost']['service_k8s_version'] | default('') }}"
+    k8s_pip_packages: "{{ hostvars['localhost']['k8s_pip_packages'] | default([]) }}"
   delegate_to: "{{ host_item }}"
   delegate_facts: true
   run_once: true
@@ -85,3 +86,4 @@
           and hostvars['localhost']['kube_vip'] | default('') | string == ''
         )
       or hostvars['localhost']['service_k8s_version'] | default('') | string == ''
+      or (hostvars['localhost']['k8s_pip_packages'] | default([])) is not defined
