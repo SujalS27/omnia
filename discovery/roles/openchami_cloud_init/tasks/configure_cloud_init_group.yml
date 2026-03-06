@@ -31,6 +31,19 @@
     - hostvars['localhost']['slurm_cluster'] is defined
     - hostvars['localhost']['nfs_client_params'] is defined
 
+- name: Derive k8s NFS facts from storage_config when not set
+  ansible.builtin.set_fact:
+    k8s_nfs_server_ip: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', hostvars['localhost']['service_k8s_cluster'][0].nfs_storage_name) | first).server_ip }}"
+    k8s_server_share_path: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', hostvars['localhost']['service_k8s_cluster'][0].nfs_storage_name) | first).server_share_path }}"
+    k8s_client_mount_path: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', hostvars['localhost']['service_k8s_cluster'][0].nfs_storage_name) | first).client_share_path }}"
+  delegate_to: localhost
+  delegate_facts: true
+  run_once: true
+  when:
+    - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string == ''
+    - hostvars['localhost']['service_k8s_cluster'] is defined
+    - hostvars['localhost']['nfs_client_params'] is defined
+
 - name: Include openchami cloud-init vars
   ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_cloud_init_vars.yml"
 
