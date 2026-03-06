@@ -35,6 +35,7 @@
   ansible.builtin.set_fact:
     k8s_nfs_name: "{{ (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name | default('nfs_k8s') }}"
     k8s_crio_storage_size: "{{ (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].k8s_crio_storage_size | default('20G') }}"
+    pulp_mirror: "{{ hostvars['localhost']['admin_nic_ip'] | default('') }}:2225"
   delegate_to: localhost
   delegate_facts: true
   run_once: true
@@ -67,6 +68,7 @@
     k8s_server_share_path: "{{ hostvars['localhost']['k8s_server_share_path'] | default('') }}"
     k8s_client_mount_path: "{{ hostvars['localhost']['k8s_client_mount_path'] | default('') }}"
     k8s_crio_storage_size: "{{ hostvars['localhost']['k8s_crio_storage_size'] | default('20G') }}"
+    pulp_mirror: "{{ hostvars['localhost']['pulp_mirror'] | default('') }}"
   delegate_to: "{{ item }}"
   delegate_facts: true
   run_once: true
@@ -103,9 +105,18 @@
     k8s_server_share_path: "{{ hostvars['localhost']['k8s_server_share_path'] | default('') }}"
     k8s_client_mount_path: "{{ hostvars['localhost']['k8s_client_mount_path'] | default('') }}"
     k8s_crio_storage_size: "{{ hostvars['localhost']['k8s_crio_storage_size'] | default('20G') }}"
+    pulp_mirror: "{{ hostvars['localhost']['pulp_mirror'] | default('') }}"
   when:
     - k8s_nfs_server_ip is not defined or k8s_nfs_server_ip | string == ''
     - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string != ''
+
+- name: Fail if pulp_mirror is unset
+  ansible.builtin.fail:
+    msg: >-
+      pulp_mirror is not defined. Ensure admin_nic_ip is set (from network_spec) so pulp_mirror can be computed as <admin_nic_ip>:2225
+      or set pulp_mirror explicitly before rendering cloud-init templates.
+  when:
+    - hostvars['localhost']['pulp_mirror'] | default('') | string == ''
 
 - name: Include openchami cloud-init vars
   ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_cloud_init_vars.yml"
