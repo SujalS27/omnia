@@ -31,6 +31,15 @@
     - hostvars['localhost']['slurm_cluster'] is defined
     - hostvars['localhost']['nfs_client_params'] is defined
 
+- name: Derive k8s NFS name to lookup
+  ansible.builtin.set_fact:
+    k8s_nfs_name: "{{ (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name | default('nfs_k8s') }}"
+  delegate_to: localhost
+  delegate_facts: true
+  run_once: true
+  when:
+    - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string == ''
+    - hostvars['localhost']['nfs_client_params'] is defined
 
 - name: Derive k8s NFS facts from storage_config when not set
   ansible.builtin.set_fact:
