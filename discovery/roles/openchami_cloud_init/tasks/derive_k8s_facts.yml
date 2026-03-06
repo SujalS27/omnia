@@ -20,6 +20,7 @@
     enable_k8s_ha: "{{ hostvars['localhost']['enable_k8s_ha'] | default(service_k8s_cluster_ha[0].enable_k8s_ha | default(false), true) }}"
     kube_vip: "{{ hostvars['localhost']['kube_vip'] | default(service_k8s_cluster_ha[0].virtual_ip_address | default(''), true) }}"
     service_k8s_version: "{{ hostvars['localhost']['service_k8s_version'] | default(service_k8s_cluster[0].k8s_version | default(''), true) }}"
+    k8s_pip_packages: "{{ hostvars['localhost']['k8s_pip_packages'] | default([]) }}"
   delegate_to: localhost
   delegate_facts: true
   run_once: true
