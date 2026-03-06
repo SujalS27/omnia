@@ -60,6 +60,19 @@
   when:
     - hostvars['localhost']['k8s_nfs_entry'] is defined
 
+- name: Propagate k8s NFS facts to all hosts
+  ansible.builtin.set_fact:
+    k8s_nfs_server_ip: "{{ hostvars['localhost']['k8s_nfs_server_ip'] | default('') }}"
+    k8s_server_share_path: "{{ hostvars['localhost']['k8s_server_share_path'] | default('') }}"
+    k8s_client_mount_path: "{{ hostvars['localhost']['k8s_client_mount_path'] | default('') }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  run_once: true
+  loop: "{{ ansible_play_hosts_all | default(ansible_play_hosts) }}"
+  when:
+    - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string != ''
+    - hostvars['localhost']['k8s_server_share_path'] | default('') | string != ''
+
 - name: Fail if k8s NFS server/path are unset or nfs_name not found
   ansible.builtin.fail:
     msg: >-
