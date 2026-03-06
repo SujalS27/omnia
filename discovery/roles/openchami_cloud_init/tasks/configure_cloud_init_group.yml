@@ -43,6 +43,8 @@
     admin_netmask_bits: "{{ hostvars['localhost']['admin_netmask_bits'] | default('') }}"
     admin_nic_cidr: "{{ (hostvars['localhost']['admin_nic_ip'] | default('') ~ '/' ~ hostvars['localhost']['admin_netmask_bits'] | default('')) | ansible.utils.ipaddr('network/prefix') if (hostvars['localhost']['admin_nic_ip'] is defined and hostvars['localhost']['admin_netmask_bits'] is defined and hostvars['localhost']['admin_nic_ip']|string != '' and hostvars['localhost']['admin_netmask_bits']|string != '') else '' }}"
     pulp_mirror: "{{ hostvars['localhost']['admin_nic_ip'] | default('') }}:2225"
+    enable_k8s_ha: "{{ hostvars['localhost']['enable_k8s_ha'] | default(service_k8s_cluster_ha[0].enable_k8s_ha | default(false), true) }}"
+    kube_vip: "{{ hostvars['localhost']['kube_vip'] | default(service_k8s_cluster_ha[0].virtual_ip_address | default(''), true) }}"
   delegate_to: localhost
   delegate_facts: true
   run_once: true
@@ -59,6 +61,8 @@
     admin_nic_ip: "{{ hostvars['localhost']['admin_nic_ip'] | default('') }}"
     admin_netmask_bits: "{{ hostvars['localhost']['admin_netmask_bits'] | default('') }}"
     admin_nic_cidr: "{{ hostvars['localhost']['admin_nic_cidr'] | default('') }}"
+    enable_k8s_ha: "{{ hostvars['localhost']['enable_k8s_ha'] | default(false) }}"
+    kube_vip: "{{ hostvars['localhost']['kube_vip'] | default('') }}"
   delegate_to: "{{ host_item }}"
   delegate_facts: true
   run_once: true
@@ -78,37 +82,20 @@
     - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string == ''
       or hostvars['localhost']['k8s_server_share_path'] | default('') | string == ''
 
-- name: Debug k8s NFS facts on localhost
-  ansible.builtin.debug:
-    msg:
-      k8s_nfs_name: "{{ hostvars['localhost']['k8s_nfs_name'] | default('') }}"
-      k8s_nfs_entry: "{{ hostvars['localhost']['k8s_nfs_entry'] | default({}) }}"
-      k8s_nfs_server_ip: "{{ hostvars['localhost']['k8s_nfs_server_ip'] | default('') }}"
-      k8s_server_share_path: "{{ hostvars['localhost']['k8s_server_share_path'] | default('') }}"
-      k8s_client_mount_path: "{{ hostvars['localhost']['k8s_client_mount_path'] | default('') }}"
-      k8s_crio_storage_size: "{{ hostvars['localhost']['k8s_crio_storage_size'] | default('') }}"
-      admin_nic_ip: "{{ hostvars['localhost']['admin_nic_ip'] | default('') }}"
-      admin_netmask_bits: "{{ hostvars['localhost']['admin_netmask_bits'] | default('') }}"
-      admin_nic_cidr: "{{ hostvars['localhost']['admin_nic_cidr'] | default('') }}"
-  run_once: true
-  delegate_to: localhost
-  when: ansible_verbosity | default(0) | int > 0
-
-- name: Fail if pulp_mirror is unset
+- name: Fail if required k8s facts are unset
   ansible.builtin.fail:
     msg: >-
-      pulp_mirror is not defined. Ensure admin_nic_ip is set (from network_spec) so pulp_mirror can be computed as <admin_nic_ip>:2225
-      or set pulp_mirror explicitly before rendering cloud-init templates.
+      Required K8s facts missing. Check storage_config nfs entry '{{ hostvars['localhost']['k8s_nfs_name'] | default('nfs_k8s') }}', admin_nic_ip/netmask_bits from network_spec, pulp_mirror (<admin_nic_ip>:2225), and kube_vip when HA is enabled.
   when:
-    - hostvars['localhost']['pulp_mirror'] | default('') | string == ''
-
-- name: Fail if admin_nic_ip or netmask are unset
-  ansible.builtin.fail:
-    msg: >-
-      admin_nic_ip/admin_netmask_bits are not defined. Ensure network_spec was loaded (prepare_oim/discovery) so admin network facts are available.
-  when:
-    - hostvars['localhost']['admin_nic_ip'] | default('') | string == ''
+    - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string == ''
+      or hostvars['localhost']['k8s_server_share_path'] | default('') | string == ''
+      or hostvars['localhost']['admin_nic_ip'] | default('') | string == ''
       or hostvars['localhost']['admin_netmask_bits'] | default('') | string == ''
+      or hostvars['localhost']['pulp_mirror'] | default('') | string == ''
+      or (
+          hostvars['localhost']['enable_k8s_ha'] | default(false) | bool
+          and hostvars['localhost']['kube_vip'] | default('') | string == ''
+        )
 
 - name: Include openchami cloud-init vars
   ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_cloud_init_vars.yml"
