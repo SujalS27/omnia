@@ -17,6 +17,18 @@
     admin_nic_cidr: "{{ (hostvars['localhost']['admin_nic_ip'] | default('') ~ '/' ~ hostvars['localhost']['admin_netmask_bits'] | default('')) | ansible.utils.ipaddr('network/prefix') if (hostvars['localhost']['admin_nic_ip'] is defined and hostvars['localhost']['admin_netmask_bits'] is defined and hostvars['localhost']['admin_nic_ip']|string != '' and hostvars['localhost']['admin_netmask_bits']|string != '') else '' }}"
     dns: "{{ hostvars['localhost']['dns'] | default([]) }}"
     pulp_mirror: "{{ hostvars['localhost']['admin_nic_ip'] | default('') }}:2225"
+    pulp_server_ip: >-
+      {{ hostvars['localhost']['pulp_server_ip']
+         | default(
+             (hostvars['localhost']['offline_pip_module_path'] | default('') | urlsplit('hostname'))
+             | default(
+                 (hostvars[inventory_hostname]['offline_pip_module_path'] | default('') | urlsplit('hostname'))
+                 | default(hostvars[inventory_hostname]['pulp_server_ip'] | default(hostvars['localhost']['admin_nic_ip'] | default(''), true), true),
+                 true
+               ),
+             true
+           )
+      }}
     enable_k8s_ha: "{{ hostvars['localhost']['enable_k8s_ha'] | default(service_k8s_cluster_ha[0].enable_k8s_ha | default(false), true) }}"
     kube_vip: "{{ hostvars['localhost']['kube_vip'] | default(service_k8s_cluster_ha[0].virtual_ip_address | default(''), true) }}"
     service_k8s_version: "{{ hostvars['localhost']['service_k8s_version'] | default(service_k8s_cluster[0].k8s_version | default(''), true) }}"
@@ -38,6 +50,7 @@
     k8s_pod_network_cidr: "{{ hostvars['localhost']['k8s_pod_network_cidr'] | default('') }}"
     pod_external_ip_range: "{{ hostvars['localhost']['pod_external_ip_range'] | default('') }}"
     pulp_mirror: "{{ hostvars['localhost']['pulp_mirror'] | default('') }}"
+    pulp_server_ip: "{{ hostvars['localhost']['pulp_server_ip'] | default('') }}"
     admin_nic_ip: "{{ hostvars['localhost']['admin_nic_ip'] | default('') }}"
     admin_netmask_bits: "{{ hostvars['localhost']['admin_netmask_bits'] | default('') }}"
     admin_nic_cidr: "{{ hostvars['localhost']['admin_nic_cidr'] | default('') }}"
@@ -76,6 +89,7 @@
       or hostvars['localhost']['admin_nic_ip'] | default('') | string == ''
       or hostvars['localhost']['admin_netmask_bits'] | default('') | string == ''
       or hostvars['localhost']['pulp_mirror'] | default('') | string == ''
+      or hostvars['localhost']['pulp_server_ip'] | default('') | string == ''
       or hostvars['localhost']['k8s_cni'] | default('') | string == ''
       or hostvars['localhost']['k8s_service_addresses'] | default('') | string == ''
       or hostvars['localhost']['k8s_pod_network_cidr'] | default('') | string == ''
