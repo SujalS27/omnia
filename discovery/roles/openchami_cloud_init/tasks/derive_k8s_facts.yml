@@ -39,6 +39,48 @@
   when:
     - hostvars['localhost']['nfs_client_params'] is defined
 
+- name: Compute service_k8s packages file path
+  ansible.builtin.set_fact:
+    k8s_packages_file: "{{ hostvars['localhost']['input_project_dir'] }}/config/x86_64/{{ hostvars['localhost']['software_config'].cluster_os_type }}/{{ hostvars['localhost']['software_config'].cluster_os_version }}/service_k8s.json"
+  delegate_to: localhost
+  run_once: true
+  when:
+    - hostvars['localhost']['input_project_dir'] is defined
+    - hostvars['localhost']['software_config'] is defined
+
+- name: Ensure service_k8s packages file exists
+  ansible.builtin.stat:
+    path: "{{ k8s_packages_file }}"
+  delegate_to: localhost
+  run_once: true
+  register: k8s_packages_file_stat
+  failed_when: not k8s_packages_file_stat.stat.exists
+  when:
+    - k8s_packages_file is defined
+
+- name: Load service_k8s.json
+  ansible.builtin.set_fact:
+    k8s_packages_json: "{{ lookup('file', k8s_packages_file) | from_json }}"
+  delegate_to: localhost
+  run_once: true
+  when:
+    - k8s_packages_file_stat is defined
+    - k8s_packages_file_stat.stat.exists
+
+- name: Derive manifest/tarball/git package names for cloud-init templates
+  ansible.builtin.set_fact:
+    calico_package: "{{ k8s_packages_json['service_kube_control_plane_first']['cluster'] | selectattr('type', 'equalto', 'manifest') | selectattr('package', 'search', 'calico') | map(attribute='package') | join }}"
+    metallb_package: "{{ k8s_packages_json['service_kube_control_plane_first']['cluster'] | selectattr('type', 'equalto', 'manifest') | selectattr('package', 'search', 'metallb-native') | map(attribute='package') | join }}"
+    multus_package: "{{ k8s_packages_json['service_kube_control_plane_first']['cluster'] | selectattr('type', 'equalto', 'manifest') | selectattr('package', 'search', 'multus-daemonset-thick') | map(attribute='package') | join }}"
+    helm_package: "{{ k8s_packages_json['service_kube_control_plane_first']['cluster'] | selectattr('type', 'equalto', 'tarball') | selectattr('package', 'search', 'helm') | map(attribute='package') | join }}"
+    nfs_subdir_external_provisioner_pkg: "{{ k8s_packages_json['service_kube_control_plane_first']['cluster'] | selectattr('type', 'equalto', 'tarball') | selectattr('package', 'search', 'nfs-subdir-external-provisioner') | map(attribute='package') | join }}"
+    whereabouts_pkg: "{{ k8s_packages_json['service_kube_control_plane_first']['cluster'] | selectattr('type', 'equalto', 'git') | selectattr('package', 'search', 'whereabouts') | map(attribute='package') | join }}"
+  delegate_to: localhost
+  delegate_facts: true
+  run_once: true
+  when:
+    - k8s_packages_json is defined
+
 - name: Propagate k8s facts to all hosts
   ansible.builtin.set_fact:
     k8s_nfs_server_ip: "{{ hostvars['localhost']['k8s_nfs_server_ip'] | default('') }}"
@@ -59,6 +101,12 @@
     kube_vip: "{{ hostvars['localhost']['kube_vip'] | default('') }}"
     service_k8s_version: "{{ hostvars['localhost']['service_k8s_version'] | default('') }}"
     k8s_pip_packages: "{{ hostvars['localhost']['k8s_pip_packages'] | default([]) }}"
+    calico_package: "{{ hostvars['localhost']['calico_package'] | default('') }}"
+    metallb_package: "{{ hostvars['localhost']['metallb_package'] | default('') }}"
+    multus_package: "{{ hostvars['localhost']['multus_package'] | default('') }}"
+    helm_package: "{{ hostvars['localhost']['helm_package'] | default('') }}"
+    nfs_subdir_external_provisioner_pkg: "{{ hostvars['localhost']['nfs_subdir_external_provisioner_pkg'] | default('') }}"
+    whereabouts_pkg: "{{ hostvars['localhost']['whereabouts_pkg'] | default('') }}"
   delegate_to: "{{ host_item }}"
   delegate_facts: true
   run_once: true
@@ -101,3 +149,6 @@
         )
       or hostvars['localhost']['service_k8s_version'] | default('') | string == ''
       or (hostvars['localhost']['k8s_pip_packages'] | default([])) is not defined
+      or hostvars['localhost']['calico_package'] | default('') | string == ''
+      or hostvars['localhost']['metallb_package'] | default('') | string == ''
+      or hostvars['localhost']['nfs_subdir_external_provisioner_pkg'] | default('') | string == ''
