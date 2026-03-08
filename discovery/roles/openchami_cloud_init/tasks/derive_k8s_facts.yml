@@ -33,12 +33,13 @@
     kube_vip: "{{ hostvars['localhost']['kube_vip'] | default(service_k8s_cluster_ha[0].virtual_ip_address | default(''), true) }}"
     service_k8s_version: "{{ hostvars['localhost']['service_k8s_version'] | default(service_k8s_cluster[0].k8s_version | default(''), true) }}"
     k8s_pip_packages: "{{ hostvars['localhost']['k8s_pip_packages'] | default([]) }}"
-    csi_driver_powerscale_support: "{{ hostvars['localhost']['csi_driver_powerscale_support'] | default(false) | bool }}"
+    csi_driver_powerscale_support: "{{ hostvars['localhost']['software_config'].softwares | selectattr('name', 'equalto', 'csi_driver_powerscale') | list | length > 0 }}"
   delegate_to: localhost
   delegate_facts: true
   run_once: true
   when:
     - hostvars['localhost']['nfs_client_params'] is defined
+    - hostvars['localhost']['software_config'] is defined
 
 - name: Compute service_k8s packages file path
   ansible.builtin.set_fact:
@@ -108,7 +109,7 @@
     helm_package: "{{ hostvars['localhost']['helm_package'] | default('') }}"
     nfs_subdir_external_provisioner_pkg: "{{ hostvars['localhost']['nfs_subdir_external_provisioner_pkg'] | default('') }}"
     whereabouts_pkg: "{{ hostvars['localhost']['whereabouts_pkg'] | default('') }}"
-    csi_driver_powerscale_support: "{{ hostvars['localhost']['csi_driver_powerscale_support'] | default(false) | bool }}"
+    csi_driver_powerscale_support: "{{ hostvars['localhost']['csi_driver_powerscale_support'] }}"
   delegate_to: "{{ host_item }}"
   delegate_facts: true
   run_once: true
@@ -154,3 +155,4 @@
       or hostvars['localhost']['calico_package'] | default('') | string == ''
       or hostvars['localhost']['metallb_package'] | default('') | string == ''
       or hostvars['localhost']['nfs_subdir_external_provisioner_pkg'] | default('') | string == ''
+      or hostvars['localhost']['csi_driver_powerscale_support'] is not defined
