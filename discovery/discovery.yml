@@ -43,6 +43,21 @@
   tags:
     - always
 
+- name: Derive workload stack presence from functional groups
+  hosts: localhost
+  gather_facts: false
+  tags:
+    - always
+  tasks:
+    - name: Collect functional group names
+      ansible.builtin.set_fact:
+        functional_group_names: "{{ functional_groups | default([]) | map(attribute='name') | list }}"
+
+    - name: Set workload presence flags
+      ansible.builtin.set_fact:
+        service_k8s_groups_present: "{{ (functional_group_names | default([])) | select('match', '^service_kube_(control_plane(_first)?|node)_') | list | length > 0 }}"
+        slurm_groups_present: "{{ (functional_group_names | default([])) | select('match', '^slurm_(control_node|node|login_node|login_compiler_node)_') | list | length > 0 }}"
+
 - name: Set_fact for fetch omnia config credentials
   hosts: localhost
   connection: local
@@ -281,8 +296,12 @@
       tags: nfs_client
     - role: k8s_config
       tags: k8s_config
+      when:
+        - hostvars['localhost']['service_k8s_groups_present'] | default(false) | bool
     - role: slurm_config
       tags: slurm_config
+      when:
+        - hostvars['localhost']['slurm_groups_present'] | default(false) | bool
     - role: openldap
       tags: openldap
     - role: telemetry
