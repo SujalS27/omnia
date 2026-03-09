@@ -19,6 +19,12 @@
   delegate_to: localhost
   run_once: true
 
+- name: Load high_availability_config for HA and kube_vip (localhost)
+  ansible.builtin.include_vars:
+    file: "{{ hostvars['localhost']['input_project_dir'] }}/high_availability_config.yml"
+  delegate_to: localhost
+  run_once: true
+
 - name: Define local_repo access config path
   ansible.builtin.set_fact:
     local_repo_access_config_file: "{{ local_repo_access_config_file | default('/opt/omnia/provision/local_repo_access.yml') }}"
