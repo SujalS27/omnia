@@ -298,12 +298,28 @@
       tags: k8s_config
       when:
         - hostvars[inventory_hostname]['service_k8s_support'] | default(true) | bool
-        - hostvars['localhost']['service_k8s_groups_present'] | default(false) | bool
+        - hostvars['localhost']['service_k8s_groups_present']
+            | default(
+              (
+                hostvars['localhost']['functional_groups'] | default([])
+              )
+              | map(attribute='name') | list
+              | select('match', '^service_kube_(control_plane(_first)?|node)_') | list | length > 0,
+              true)
+            | bool
     - role: slurm_config
       tags: slurm_config
       when:
         - hostvars[inventory_hostname]['slurm_support'] | default(true) | bool
-        - hostvars['localhost']['slurm_groups_present'] | default(false) | bool
+        - hostvars['localhost']['slurm_groups_present']
+            | default(
+              (
+                hostvars['localhost']['functional_groups'] | default([])
+              )
+              | map(attribute='name') | list
+              | select('match', '^slurm_(control_node|node|login_node|login_compiler_node)_') | list | length > 0,
+              true)
+            | bool
     - role: openldap
       tags: openldap
     - role: telemetry
