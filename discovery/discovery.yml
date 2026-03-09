@@ -297,11 +297,11 @@
     - role: k8s_config
       tags: k8s_config
       when:
-        - hostvars['localhost']['service_k8s_groups_present'] | default(false) | bool
+        - hostvars['localhost']['service_k8s_groups_present'] | default(true) | bool
     - role: slurm_config
       tags: slurm_config
       when:
-        - hostvars['localhost']['slurm_groups_present'] | default(false) | bool
+        - hostvars['localhost']['slurm_groups_present'] | default(true) | bool
     - role: openldap
       tags: openldap
     - role: telemetry
