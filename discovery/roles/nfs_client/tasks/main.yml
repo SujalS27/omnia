@@ -29,7 +29,7 @@
     service_k8s_support: "{{ software_config.softwares | selectattr('name', 'in', ['service_k8s']) | list | length > 0 }}"
 
 - name: Block for filtering slurm mounts
-  when: ('slurm' in omnia_run_tags) and (slurm_support)
+  when: slurm_support
   block:
     - name: Include omnia_config
       ansible.builtin.include_vars:
@@ -49,7 +49,7 @@
         storage_to_be_mounted: "{{ storage_to_be_mounted + slurm_nfs }}"
 
 - name: Block for filtering service_k8s mounts
-  when: ('service_k8s' in omnia_run_tags) and (service_k8s_support)
+  when: service_k8s_support
   block:
     - name: Include omnia_config
       ansible.builtin.include_vars:
