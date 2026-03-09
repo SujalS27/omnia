@@ -298,10 +298,12 @@
       tags: k8s_config
       when:
         - hostvars[inventory_hostname]['service_k8s_support'] | default(true) | bool
+        - hostvars['localhost']['service_k8s_groups_present'] | default(false) | bool
     - role: slurm_config
       tags: slurm_config
       when:
         - hostvars[inventory_hostname]['slurm_support'] | default(true) | bool
+        - hostvars['localhost']['slurm_groups_present'] | default(false) | bool
     - role: openldap
       tags: openldap
     - role: telemetry
