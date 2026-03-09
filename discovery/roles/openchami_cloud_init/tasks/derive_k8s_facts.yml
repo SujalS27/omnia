@@ -2,12 +2,12 @@
 
 - name: Derive k8s facts (nfs, crio, pulp, admin) on localhost
   ansible.builtin.set_fact:
-    k8s_nfs_name: "{{ (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name | default('nfs_k8s') }}"
-    k8s_nfs_entry: "{{ hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name | default('nfs_k8s')) | list | first | default({}) }}"
-    k8s_nfs_server_ip: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name | default('nfs_k8s')) | first).server_ip | default('') }}"
-    k8s_server_share_path: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name | default('nfs_k8s')) | first).server_share_path | default('') }}"
-    k8s_client_mount_path: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name | default('nfs_k8s')) | first).client_share_path | default('') }}"
-    k8s_crio_storage_size: "{{ (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].k8s_crio_storage_size | default('20G') }}"
+    k8s_nfs_name: "{{ (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name }}"
+    k8s_nfs_entry: "{{ hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name) | list | first | default({}) }}"
+    k8s_nfs_server_ip: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name) | first).server_ip | default('') }}"
+    k8s_server_share_path: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name) | first).server_share_path | default('') }}"
+    k8s_client_mount_path: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].nfs_storage_name) | first).client_share_path | default('') }}"
+    k8s_crio_storage_size: "{{ (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].k8s_crio_storage_size | default('') }}"
     k8s_cni: "{{ (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].k8s_cni | default('') }}"
     k8s_service_addresses: "{{ (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].k8s_service_addresses | default('') }}"
     k8s_pod_network_cidr: "{{ (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].k8s_pod_network_cidr | default('') }}"
@@ -29,9 +29,9 @@
              true
            )
       }}
-    enable_k8s_ha: "{{ hostvars['localhost']['enable_k8s_ha'] | default(service_k8s_cluster_ha[0].enable_k8s_ha | default(false), true) }}"
-    kube_vip: "{{ hostvars['localhost']['kube_vip'] | default(service_k8s_cluster_ha[0].virtual_ip_address | default(''), true) }}"
-    service_k8s_version: "{{ hostvars['localhost']['service_k8s_version'] | default(service_k8s_cluster[0].k8s_version | default(''), true) }}"
+    enable_k8s_ha: "{{ hostvars['localhost']['enable_k8s_ha'] | default(service_k8s_cluster_ha[0].enable_k8s_ha | default(false)) }}"
+    kube_vip: "{{ hostvars['localhost']['kube_vip'] | default(service_k8s_cluster_ha[0].virtual_ip_address | default('')) }}"
+    service_k8s_version: "{{ hostvars['localhost']['service_k8s_version'] | default(service_k8s_cluster[0].k8s_version | default('')) }}"
     k8s_pip_packages: "{{ hostvars['localhost']['k8s_pip_packages'] | default([]) }}"
     csi_driver_powerscale_support: "{{ hostvars['localhost']['software_config'].softwares | selectattr('name', 'equalto', 'csi_driver_powerscale') | list | length > 0 }}"
   delegate_to: localhost
@@ -88,7 +88,7 @@
     k8s_nfs_server_ip: "{{ hostvars['localhost']['k8s_nfs_server_ip'] | default('') }}"
     k8s_server_share_path: "{{ hostvars['localhost']['k8s_server_share_path'] | default('') }}"
     k8s_client_mount_path: "{{ hostvars['localhost']['k8s_client_mount_path'] | default('') }}"
-    k8s_crio_storage_size: "{{ hostvars['localhost']['k8s_crio_storage_size'] | default('20G') }}"
+    k8s_crio_storage_size: "{{ hostvars['localhost']['k8s_crio_storage_size'] | default('') }}"
     k8s_cni: "{{ hostvars['localhost']['k8s_cni'] | default('') }}"
     k8s_service_addresses: "{{ hostvars['localhost']['k8s_service_addresses'] | default('') }}"
     k8s_pod_network_cidr: "{{ hostvars['localhost']['k8s_pod_network_cidr'] | default('') }}"
