@@ -33,13 +33,15 @@
         state: directory
         mode: "{{ hostvars['localhost']['dir_permissions_755'] }}"
 
+    - name: Set nodes fact for template
+      ansible.builtin.set_fact:
+        nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
+
     - name: Load the openchami nodes.yaml
       ansible.builtin.template:
         src: "{{ playbook_dir }}/roles/configure_ochami/templates/nodes/nodes.yaml.j2"
         dest: "{{ openchami_nodes_vars_path }}"
         mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
-        vars:
-          nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
 
     - name: Create telemetry directory
       ansible.builtin.file:
