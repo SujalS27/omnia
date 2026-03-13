@@ -14,8 +14,6 @@
 ---
 
 # Include variables from configure_ochami role for compatibility
-openchami_nodes_template: nodes/nodes.yaml.j2
-bmc_group_data_template: nodes/bmc_group_data.csv.j2
 openchami_share_path: /opt/omnia/openchami
 telemetry_share_path: "{{ hostvars['localhost']['oim_shared_path'] }}/omnia/telemetry"
 bmc_group_data_file: "{{ telemetry_share_path }}/bmc_group_data.csv"
@@ -24,6 +22,5 @@ nodes_dir: "{{ openchami_work_dir }}/nodes"
 openchami_config_vars_path: "{{ openchami_share_path }}/configs_vars.yaml"
 openchami_nodes_vars_path: "{{ nodes_dir }}/nodes.yaml"
 discover_fail_msg: "Failed to discover nodes. Please verify the inputs provided in mapping file."
-openchami_hostname_template: nodes/hostname.yaml.j2
 openchami_hostname_vars_path: "{{ nodes_dir }}/hostname.yaml"
 groups_dir: "{{ nodes_dir }}"

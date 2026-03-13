@@ -13,20 +13,20 @@
 # limitations under the License.
 ---
 
+- name: Include openchami commands
+  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
+
 - name: Delete ci group configuration - common
-  ansible.builtin.command: /usr/bin/ochami cloud-init group delete --no-confirm -f yaml -d @{{ ci_group_common_dest }}
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_group_delete }} @{{ ci_group_common_dest }}"
   changed_when: true
   failed_when: false
 
 - name: Render ci group common template
   ansible.builtin.template:
-    src: "{{ ci_group_common_template }}"
+    src: "{{ playbook_dir }}/roles/configure_ochami/templates/cloud_init/ci-group-common.yaml.j2"
     dest: "{{ ci_group_common_dest }}"
     mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
-  vars:
-    ansible_search_path:
-      - "{{ role_path }}/../../../configure_ochami/templates"
 
 - name: Set ci group configuration - common
-  ansible.builtin.command: /usr/bin/ochami cloud-init group set -f yaml -d @{{ ci_group_common_dest }}
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_group_set }} @{{ ci_group_common_dest }}"
   changed_when: true

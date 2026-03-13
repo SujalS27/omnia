@@ -14,16 +14,16 @@
 ---
 
 - name: Delete all ochami component endpoints
-  ansible.builtin.command: /usr/bin/ochami smd compep delete --no-confirm --all
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_compep_delete_all }}"
   changed_when: true
   failed_when: false
 
 - name: Delete all ochami redfish endpoints
-  ansible.builtin.command: /usr/bin/ochami smd rfe delete --no-confirm --all
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_rfe_delete_all }}"
   changed_when: true
   failed_when: false
 
 - name: Delete all ochami iface
-  ansible.builtin.command: /usr/bin/ochami smd iface delete --no-confirm --all
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_iface_delete_all }}"
   changed_when: true
   failed_when: false

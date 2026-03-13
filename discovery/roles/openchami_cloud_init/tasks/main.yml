@@ -62,12 +62,9 @@
 
     - name: Load ci defaults template
       ansible.builtin.template:
-        src: "{{ ci_defaults_template }}"
+        src: "{{ playbook_dir }}/roles/configure_ochami/templates/cloud_init/ci-defaults.yaml.j2"
         dest: "{{ ci_defaults_dest }}"
         mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
-      vars:
-        ansible_search_path:
-          - "{{ role_path }}/../../../configure_ochami/templates"
 
     - name: Set ci defaults configuration
       ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_defaults_set }} @{{ ci_defaults_dest }}"
