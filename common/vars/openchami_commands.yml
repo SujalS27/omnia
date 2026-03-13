@@ -29,7 +29,8 @@ openchami_commands:
   smd_iface_delete_all: "smd iface delete --no-confirm --all"
   
   # SMD Node Discovery
-  smd_discover_static: "discover static -f yaml -d @{{ openchami_nodes_vars_path }} --overwrite"
+  smd_discover_static: "discover static -f yaml -d"
+  discover_static_yaml: "discover static -f yaml -d"
   
   # SMD Component Get (verify nodes created)
   smd_component_get: "smd component get"
@@ -55,5 +56,6 @@ openchami_commands:
   cloud_init_group_set: "cloud-init group set -f yaml -d"
   cloud_init_group_get_config: "cloud-init group get config"
   
-  # Cloud-Init Node Operations
+  # Cloud-Init Node Operations  
   cloud_init_node_set: "cloud-init node set -f yaml -d"
+  cloud_init_node_set_yaml: "cloud-init node set -f yaml -d"

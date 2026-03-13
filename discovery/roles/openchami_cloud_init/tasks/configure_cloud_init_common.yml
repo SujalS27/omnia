@@ -18,6 +18,7 @@
 
 - name: Delete ci group configuration - common
   ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_group_delete }} @{{ ci_group_common_dest }}"
+  environment: "{{ ochami_env }}"
   changed_when: true
   failed_when: false
 
@@ -29,4 +30,5 @@
 
 - name: Set ci group configuration - common
   ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_group_set }} @{{ ci_group_common_dest }}"
+  environment: "{{ ochami_env }}"
   changed_when: true
