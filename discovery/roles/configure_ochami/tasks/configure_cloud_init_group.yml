@@ -16,12 +16,17 @@
 - name: Include vars from default
   ansible.builtin.include_vars: "{{ default_file_path }}"
 
+- name: Include openchami commands
+  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
+
 - name: Set the functional_group_name
   ansible.builtin.set_fact:
     functional_group_name: "{{ item }}"
 
 - name: Delete ci group configuration - {{ functional_group_name }}
-  ansible.builtin.command: /usr/bin/ochami cloud-init group delete --no-confirm -f yaml -d @{{ cloud_init_dir }}/ci-group-{{ functional_group_name }}.yaml
+  ansible.builtin.command: "{{ openchami_commands.cloud_init_group_delete }} @{{ cloud_init_dir }}/ci-group-{{ functional_group_name }}.yaml"
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_group_delete }} @{{ cloud_init_dir }}/ci-group-{{ functional_group_name }}.yaml"
+  environment: "{{ ochami_env }}"
   changed_when: true
   failed_when: false
 
@@ -38,11 +43,13 @@
         msg: "{{ ci_group_load_fail_msg }}"
 
 - name: Set ci group configuration - {{ functional_group_name }}
-  ansible.builtin.command: /usr/bin/ochami cloud-init group set -f yaml -d @{{ cloud_init_dir }}/ci-group-{{ functional_group_name }}.yaml
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_group_set }} @{{ cloud_init_dir }}/ci-group-{{ functional_group_name }}.yaml"
+  environment: "{{ ochami_env }}"
   changed_when: true
 
 - name: Verify ci group configuration - {{ functional_group_name }}
-  ansible.builtin.command: /usr/bin/ochami cloud-init group get config {{ functional_group_name }}
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_group_get_config }} {{ functional_group_name }}"
+  environment: "{{ ochami_env }}"
   changed_when: false
   register: ci_group_compute_output
   no_log: true

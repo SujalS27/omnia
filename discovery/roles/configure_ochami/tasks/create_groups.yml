@@ -30,8 +30,7 @@
 
 - name: Get SMD group data
   ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_get }}"
-  environment:
-    {{ ochami_env }}
+  environment: "{{ ochami_env | default({}) }}"
   changed_when: false
   register: smd_group_data
 
@@ -45,8 +44,7 @@
 
 - name: POST new SMD groups
   ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_add }} -f yaml -d @{{ nodes_dir }}/groups-{{ functional_group_name }}.yml"
-  environment:
-    {{ ochami_env }}
+  environment: "{{ ochami_env | default({}) }}"
   changed_when: true
   when: functional_group_name not in existing_smd_group_names
 
