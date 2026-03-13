@@ -19,6 +19,9 @@
 - name: Include openchami cloud-init vars
   ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_cloud_init_vars.yml"
 
+- name: Include configure ochami vars
+  ansible.builtin.include_vars: "{{ role_path }}/../configure_ochami/vars/main.yml"
+
 - name: Configure cloud-init
   environment: "{{ hostvars['oim']['ochami_env'] }}"
   block:
@@ -62,7 +65,7 @@
 
     - name: Load ci defaults template
       ansible.builtin.template:
-        src: "{{ ci_defaults_template }}"
+        src: "{{ role_path }}/templates/{{ ci_defaults_template }}"
         dest: "{{ ci_defaults_dest }}"
         mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
 

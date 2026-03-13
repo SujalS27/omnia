@@ -54,7 +54,7 @@
         group_data: "{{ (lookup('file', hostvars['localhost']['functional_groups_config_path']) | from_yaml).groups }}"
 
     - name: Delete smd configuration
-      ansible.builtin.include_tasks: delete_smd_config.yml
+      ansible.builtin.include_tasks: "{{ role_path }}/../openchami_commands/tasks/delete_smd_config.yml"
 
     - name: Restart the cloud-init service to clear node instance data
       ansible.builtin.service:
