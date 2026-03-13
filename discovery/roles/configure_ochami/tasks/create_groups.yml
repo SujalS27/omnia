@@ -13,6 +13,9 @@
 # limitations under the License.
 ---
 
+- name: Include openchami commands
+  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
+
 - name: Set the functional_group_name
   ansible.builtin.set_fact:
     functional_group_name: "{{ item }}"
@@ -26,7 +29,9 @@
     nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
 
 - name: Get SMD group data
-  ansible.builtin.command: /usr/bin/ochami smd group get
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_get }}"
+  environment:
+    {{ ochami_env }}
   changed_when: false
   register: smd_group_data
 
@@ -39,7 +44,9 @@
     existing_smd_group_names: "{{ existing_smd_groups | map(attribute='label') | list }}"
 
 - name: POST new SMD groups
-  ansible.builtin.command: /usr/bin/ochami smd group add -f yaml -d @{{ nodes_dir }}/groups-{{ functional_group_name }}.yml
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_add }} -f yaml -d @{{ nodes_dir }}/groups-{{ functional_group_name }}.yml"
+  environment:
+    {{ ochami_env }}
   changed_when: true
   when: functional_group_name not in existing_smd_group_names
 

@@ -225,7 +225,6 @@
   roles:
     - role: nfs_client
       tags: nfs_client
-    
     - role: k8s_config
       tags: k8s_config  
     - role: slurm_config

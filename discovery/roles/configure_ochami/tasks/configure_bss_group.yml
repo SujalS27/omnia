@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
----
+- name: Include openchami commands
+  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
 
 - name: Set the functional_group_name
   ansible.builtin.set_fact:
@@ -38,10 +39,12 @@
     mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
 
 - name: Delete boot configuration - {{ functional_group_name }}
-  ansible.builtin.command: /usr/bin/ochami bss boot params delete --no-confirm -f yaml -d @{{ openchami_work_dir }}/boot/bss-{{ functional_group_name }}.yaml
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.bss_boot_params_delete }} @{{ openchami_work_dir }}/boot/bss-{{ functional_group_name }}.yaml"
+  environment: "{{ ochami_env }}"
   changed_when: true
   failed_when: false
 
 - name: Set boot configuration - {{ functional_group_name }}
-  ansible.builtin.command: /usr/bin/ochami bss boot params set -f yaml -d @{{ openchami_work_dir }}/boot/bss-{{ functional_group_name }}.yaml
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.bss_boot_params_set }} @{{ openchami_work_dir }}/boot/bss-{{ functional_group_name }}.yaml"
+  environment: "{{ ochami_env }}"
   changed_when: true

@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
----
+- name: Include openchami commands
+  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
 
 - name: Include openchami vars
   ansible.builtin.include_vars: "{{ openchami_config_vars_path }}"
@@ -36,7 +37,8 @@
     mode: "{{ hostvars['localhost']['dir_permissions_755'] }}"
 
 - name: Delete ochami bss boot params
-  ansible.builtin.command: /usr/bin/ochami bss boot params delete --no-confirm -d '{"macs":["{{ item }}"]}'
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.bss_boot_params_delete }} '{\"macs\":[\"{{ item }}\"]}'"
+  environment: "{{ ochami_env }}"
   changed_when: false
   failed_when: false
   with_items: "{{ nodes | map(attribute='interfaces.0.mac_addr') | list }}"
@@ -46,7 +48,8 @@
   with_items: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
 
 - name: Verify boot params set
-  ansible.builtin.command: ochami bss boot params get -F yaml
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.bss_boot_params_get }}"
+  environment: "{{ ochami_env }}"
   changed_when: false
   register: boot_params_output
 
@@ -85,11 +88,13 @@
     mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
 
 - name: Set ci defaults configuration
-  ansible.builtin.command: /usr/bin/ochami cloud-init defaults set -f yaml -d @{{ ci_defaults_dest }}
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_defaults_set }} @{{ ci_defaults_dest }}"
+  environment: "{{ ochami_env }}"
   changed_when: true
 
 - name: Verify ci defaults configuration
-  ansible.builtin.command: /usr/bin/ochami cloud-init defaults get -F json-pretty
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_defaults_get }}"
+  environment: "{{ ochami_env }}"
   changed_when: false
   register: ci_defaults_output
 
