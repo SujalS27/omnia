@@ -19,7 +19,8 @@
   when: not project_dir_status | default(false) | bool
   ansible.builtin.import_playbook: ../utils/include_input_dir.yml
   vars:
-    openchami_vars_suppport: true
+    openchami_vars_support: true
+    openchami_cloud_init_support: true
     omnia_metadata_support: true
 
 - name: Create oim group and provision group
@@ -66,12 +67,47 @@
 - name: Validate discovery parameters
   hosts: localhost
   connection: local
-  roles:
-    - discovery_validations
+  tags:
+    - openchami_commands
+    - cloud_init
+  tasks:
+    - name: Load discovery validation vars
+      ansible.builtin.include_vars: "{{ playbook_dir }}/roles/discovery_validations/vars/main.yml"
+
+    - name: Set_fact for omnia_config_credentials.yml variables
+      ansible.builtin.set_fact:
+        provision_password: "{{ hostvars['localhost']['provision_password'] }}"
+        bmc_username: "{{ hostvars['localhost']['bmc_username'] }}"
+        bmc_password: "{{ hostvars['localhost']['bmc_password'] }}"
+      no_log: true
+      when:
+        - hostvars['localhost']['provision_password'] is defined
+        - hostvars['localhost']['bmc_username'] is defined
+        - hostvars['localhost']['bmc_password'] is defined
+
+    - name: Include discovery inputs
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/roles/discovery_validations/tasks/include_inputs.yml"
+      with_items: "{{ discovery_inputs }}"
+
+    - name: Include software config
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/roles/discovery_validations/tasks/include_software_config.yml"
+
+    - name: Check if discovery mechanism is mapping
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/roles/discovery_validations/tasks/validate_mapping_mechanism.yml"
+
+    - name: Validate mapping file
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/roles/discovery_validations/tasks/validate_mapping_file.yml"
+      when: mapping_file_status
+
+    - name: Update hosts file
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/roles/discovery_validations/tasks/update_hosts.yml"
 
 - name: Validate OIM timezone
   hosts: oim
   connection: ssh
+  tags:
+    - openchami_commands
+    - cloud_init
   tasks:
     - name: Validate OIM timezone has not changed
       ansible.builtin.include_role:
@@ -93,6 +129,9 @@
 - name: Validate discovery parameters
   hosts: oim
   connection: ssh
+  tags:
+    - openchami_commands
+    - cloud_init
   tasks:
     - name: Validate OpenLDAP container is running
       ansible.builtin.include_role:
@@ -109,17 +148,22 @@
 - name: Configure auth for openchami
   hosts: oim
   connection: ssh
+  tags:
+    - openchami_commands
+    - cloud_init
   tasks:
     - name: Openchami cluster authentication
       ansible.builtin.include_tasks: "{{ playbook_dir }}/../common/tasks/common/openchami_auth.yml"
       vars:
         oim_node_name: "{{ hostvars['localhost']['oim_node_name'] }}"
 
-- name: Discover nodes, configure bss and cloud-init
+# OpenCHAMI Commands Execution (NEW - Tag: openchami_commands)
+- name: OpenCHAMI Commands Execution
   hosts: oim
   connection: ssh
+  tags: openchami_commands
   pre_tasks:
-    - name: Discover nodes
+    - name: Prepare OpenChami discovery artifacts
       ansible.builtin.include_role:
         name: configure_ochami
         tasks_from: discover_mapping_nodes.yml
@@ -128,10 +172,78 @@
       ansible.builtin.include_role:
         name: passwordless_ssh
         tasks_from: read_nodes_yaml.yml
+  tasks:
+    - name: Run OpenChami commands
+      ansible.builtin.include_role:
+        name: openchami_commands
+
+    - name: Create and manage SMD groups
+      ansible.builtin.include_role:
+        name: configure_ochami
+        tasks_from: create_groups.yml
+      loop: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
+      loop_control:
+        loop_var: item
+
+    - name: Apply SMD group commands
+      ansible.builtin.include_role:
+        name: openchami_commands
+        tasks_from: create_groups_commands.yml
+      loop: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
+      loop_control:
+        loop_var: item
+
+# Cloud-init Configuration (NEW - Tag: cloud_init)
+- name: Cloud-init Configuration
+  hosts: oim
+  connection: ssh
+  tags: cloud_init
+  tasks:
+    - name: Configure cloud-init
+      ansible.builtin.include_role:
+        name: openchami_cloud_init
+
+    - name: Create common SMD groups
+      ansible.builtin.include_role:
+        name: configure_ochami
+        tasks_from: create_groups_common.yml
+      loop: "{{ common_cloud_init_groups }}"
+      loop_control:
+        loop_var: item
+
+    - name: Configure BSS boot parameters
+      ansible.builtin.include_role:
+        name: configure_ochami
+        tasks_from: configure_bss_cloud_init.yml
+
+- name: Configure node roles
+  hosts: oim
+  connection: ssh
+  tags:
+    - openchami_commands
+    - cloud_init
   roles:
-    - nfs_client
-    - k8s_config
-    - slurm_config
-    - openldap
-    - telemetry
-    - configure_ochami
+    - role: nfs_client
+      tags: nfs_client
+    
+    - role: k8s_config
+      tags: k8s_config  
+    - role: slurm_config
+      tags: slurm_config
+    - role: openldap
+      tags: openldap
+    - role: telemetry
+      tags: telemetry
+
+# Discovery completion
+- name: Discovery completion
+  hosts: oim
+  connection: ssh
+  tags:
+    - openchami_commands
+    - cloud_init
+  tasks:
+    - name: Discovery completion
+      ansible.builtin.include_role:
+        name: configure_ochami
+        tasks_from: discovery_completion.yml

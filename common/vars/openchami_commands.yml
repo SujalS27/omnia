@@ -1,0 +1,59 @@
+# Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+
+# OpenChami Commands Dictionary
+# Centralized command definitions for SMD, BSS, Cloud-Init, and Discovery operations
+# Usage: Reference commands by key instead of hardcoding in tasks
+# Note: Commands use base CLI paths without openchami_cli_path prefix; prefix is added at task level
+
+openchami_commands:
+  # SMD Component Endpoint Operations
+  smd_compep_delete_all: "smd compep delete --no-confirm --all"
+  
+  # SMD Redfish Endpoint Operations
+  smd_rfe_delete_all: "smd rfe delete --no-confirm --all"
+  
+  # SMD Interface Operations
+  smd_iface_delete_all: "smd iface delete --no-confirm --all"
+  
+  # SMD Node Discovery
+  smd_discover_static: "discover static -f yaml -d @{{ openchami_nodes_vars_path }} --overwrite"
+  
+  # SMD Component Get (verify nodes created)
+  smd_component_get: "smd component get"
+  smd_component_get_nodes: "smd component get | jq '.Components[] | select(.Type == \"Node\")'"
+  
+  # SMD Group Operations
+  smd_group_get: "smd group get"
+  smd_group_delete: "smd group delete --no-confirm"
+  smd_group_add_yaml: "smd group add -f yaml -d"
+  smd_group_add_members: "smd group add -m"
+  
+  # BSS Boot Parameters Operations
+  bss_boot_params_delete: "bss boot params delete --no-confirm -d"
+  bss_boot_params_set: "bss boot params set -f yaml -d"
+  bss_boot_params_get: "bss boot params get -F yaml"
+  
+  # Cloud-Init Defaults Operations
+  cloud_init_defaults_set: "cloud-init defaults set -f yaml -d"
+  cloud_init_defaults_get: "cloud-init defaults get -F json-pretty"
+  
+  # Cloud-Init Group Operations
+  cloud_init_group_delete: "cloud-init group delete --no-confirm -f yaml -d"
+  cloud_init_group_set: "cloud-init group set -f yaml -d"
+  cloud_init_group_get_config: "cloud-init group get config"
+  
+  # Cloud-Init Node Operations
+  cloud_init_node_set: "cloud-init node set -f yaml -d"
