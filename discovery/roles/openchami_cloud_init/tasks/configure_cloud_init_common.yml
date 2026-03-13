@@ -23,7 +23,7 @@
 
 - name: Render ci group common template
   ansible.builtin.template:
-    src: "{{ playbook_dir }}/roles/configure_ochami/templates/cloud_init/ci-group-common.yaml.j2"
+    src: "{{ ci_group_common_template }}"
     dest: "{{ ci_group_common_dest }}"
     mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
 

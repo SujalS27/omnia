@@ -77,10 +77,13 @@
         - openchami_target_status is defined
         - openchami_target_status is not success
 
+    - name: Include openchami commands
+      ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
+
     - name: Discover ochami nodes
       block:
         - name: Discover ochami nodes
-          ansible.builtin.command: /usr/bin/ochami discover static -f yaml -d @"{{ openchami_nodes_vars_path }}" --overwrite
+          ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.discover_static_yaml }} @{{ openchami_nodes_vars_path }} --overwrite"
           changed_when: true
           register: openchami_discover
       rescue:
@@ -91,7 +94,7 @@
     - name: Verify node created in smd
       ansible.builtin.shell: |
         set -o pipefail && \
-        /usr/bin/ochami smd component get | jq '.Components[] | select(.Type == "Node")'
+        {{ openchami_cli_path }} {{ openchami_commands.smd_component_get }} | jq '.Components[] | select(.Type == "Node")'
       changed_when: true
       register: openchami_smd_status
 
@@ -109,5 +112,5 @@
         nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
 
     - name: Configure the hostname
-      ansible.builtin.command: /usr/bin/ochami cloud-init node set -f yaml -d @"{{ openchami_hostname_vars_path }}"
+      ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_node_set_yaml }} @{{ openchami_hostname_vars_path }}"
       changed_when: true

@@ -62,7 +62,7 @@
 
     - name: Load ci defaults template
       ansible.builtin.template:
-        src: "{{ playbook_dir }}/roles/configure_ochami/templates/cloud_init/ci-defaults.yaml.j2"
+        src: "{{ ci_defaults_template }}"
         dest: "{{ ci_defaults_dest }}"
         mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
 

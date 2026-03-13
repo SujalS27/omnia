@@ -39,12 +39,12 @@
     mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
 
 - name: Delete boot configuration - {{ functional_group_name }}
-  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.bss_boot_params_delete }} @{{ openchami_work_dir }}/boot/bss-{{ functional_group_name }}.yaml"
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.bss_boot_params_delete }} @{{ bss_dir }}/bss-{{ functional_group_name }}.yaml"
   environment: "{{ ochami_env }}"
   changed_when: true
   failed_when: false
 
 - name: Set boot configuration - {{ functional_group_name }}
-  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.bss_boot_params_set }} @{{ openchami_work_dir }}/boot/bss-{{ functional_group_name }}.yaml"
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.bss_boot_params_set }} @{{ bss_dir }}/bss-{{ functional_group_name }}.yaml"
   environment: "{{ ochami_env }}"
   changed_when: true

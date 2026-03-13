@@ -16,6 +16,16 @@
 - name: Include openchami commands
   ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
 
+- name: Get existing SMD groups
+  ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_get }}"
+  environment: "{{ hostvars['oim']['ochami_env'] }}"
+  changed_when: false
+  register: smd_group_data
+
+- name: Set existing SMD group names
+  ansible.builtin.set_fact:
+    existing_smd_group_names: "{{ smd_group_data.stdout | from_json | map(attribute='label') | list }}"
+
 - name: Apply SMD group commands
   environment: "{{ hostvars['oim']['ochami_env'] }}"
   block:
@@ -24,7 +34,9 @@
       changed_when: true
       register: smd_group_add
       loop: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
-      when: item is defined
+      when: 
+        - item is defined
+        - item not in existing_smd_group_names
 
     - name: Verify SMD group creation
       ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_get }}"
