@@ -21,8 +21,8 @@ ci_defaults_dest: "{{ cloud_init_dir }}/ci-defaults.yaml"
 ci_group_common_dest: "{{ cloud_init_dir }}/ci-group-common.yaml"
 
 # Cloud-Init Templates (shared across discovery)
-ci_defaults_template: cloud_init/ci-defaults.yaml.j2
-ci_group_common_template: cloud_init/ci-group-common.yaml.j2
+ci_defaults_template: "{{ playbook_dir }}/roles/openchami_cloud_init/templates/ci-defaults.yaml.j2"
+ci_group_common_template: "{{ playbook_dir }}/roles/openchami_cloud_init/templates/ci-group-common.yaml.j2"
 
 # Cloud-Init Common Groups (ssh, chrony)
 common_cloud_init_groups:

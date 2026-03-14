@@ -64,7 +64,8 @@
     - name: Discover ochami nodes
       block:
         - name: Discover ochami nodes
-          ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_discover_static }}"
+          ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.discover_static_yaml }} @{{ openchami_nodes_vars_path }} --overwrite"
+          environment: "{{ ochami_env }}"
           changed_when: true
           register: openchami_discover
       rescue:

@@ -43,7 +43,7 @@ image_missing_fail_msg: "Failed to set kernel or initrd. Create the image using 
 
 # Usage: configure_bss_cloud_init.yml
 ssh_key_path: /root/.ssh/oim_rsa.pub
-ci_defaults_template: cloud_init/ci-defaults.yaml.j2
+ci_defaults_template: "{{ playbook_dir }}/roles/openchami_cloud_init/templates/ci-defaults.yaml.j2"
 cloud_init_dir: "{{ openchami_work_dir }}/cloud-init"
 ci_defaults_dest: '{{ cloud_init_dir }}/ci-defaults.yaml'
 ci_group_load_fail_msg: |
@@ -52,7 +52,7 @@ default_file_path: "{{ playbook_dir }}/roles/slurm_config/defaults/main.yml"
 ssh_private_key_path: /root/.ssh/oim_rsa
 
 # Usage: openchami_cloud_init role
-ci_group_common_template: cloud_init/ci-group-common.yaml.j2
+ci_group_common_template: "{{ playbook_dir }}/roles/openchami_cloud_init/templates/ci-group-common.yaml.j2"
 ci_group_common_dest: "{{ cloud_init_dir }}/ci-group-common.yaml"
 
 # Usage: discovery_completion.yml

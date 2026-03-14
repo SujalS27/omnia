@@ -24,6 +24,9 @@
     - name: Include openchami vars
       ansible.builtin.include_vars: "{{ openchami_config_vars_path }}"
 
+    - name: Include openchami commands
+      ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
+
     - name: Create ochami nodes directory
       ansible.builtin.file:
         path: "{{ nodes_dir }}"
@@ -76,9 +79,6 @@
       when:
         - openchami_target_status is defined
         - openchami_target_status is not success
-
-    - name: Include openchami commands
-      ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
 
     - name: Discover ochami nodes
       block:
