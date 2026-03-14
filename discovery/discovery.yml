@@ -126,6 +126,13 @@
   roles:
     - passwordless_ssh
 
+- name: Read nodes.yaml and derive Omnia node facts
+  hosts: localhost
+  connection: local
+  roles:
+    - passwordless_ssh
+    tasks_from: read_nodes_yaml.yml
+
 - name: Validate discovery parameters
   hosts: oim
   connection: ssh
@@ -162,16 +169,6 @@
   hosts: oim
   connection: ssh
   tags: openchami_commands
-  pre_tasks:
-    - name: Prepare OpenChami discovery artifacts
-      ansible.builtin.include_role:
-        name: openchami_commands
-        tasks_from: discover_mapping_nodes.yml
-
-    - name: Read nodes.yaml and derive Omnia node facts
-      ansible.builtin.include_role:
-        name: passwordless_ssh
-        tasks_from: read_nodes_yaml.yml
   tasks:
     - name: Run OpenChami commands
       ansible.builtin.include_role:
@@ -186,19 +183,6 @@
     - name: Configure cloud-init
       ansible.builtin.include_role:
         name: openchami_cloud_init
-
-    - name: Create common SMD groups
-      ansible.builtin.include_role:
-        name: openchami_commands
-        tasks_from: create_groups_common.yml
-      loop: "{{ common_cloud_init_groups }}"
-      loop_control:
-        loop_var: item
-
-    - name: Configure BSS boot parameters
-      ansible.builtin.include_role:
-        name: openchami_commands
-        tasks_from: configure_bss_cloud_init.yml
 
 - name: Configure node roles
   hosts: oim

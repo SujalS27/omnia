@@ -19,6 +19,9 @@
 - name: Include openchami vars
   ansible.builtin.include_vars: "{{ openchami_config_vars_path }}"
 
+- name: Include cloud-init vars for common groups
+  ansible.builtin.include_vars: "{{ role_path }}/../openchami_cloud_init/vars/main.yml"
+
 - name: Configure the ochami
   environment: "{{ hostvars['oim']['ochami_env'] }}"
   block:
@@ -126,7 +129,7 @@
 
     - name: Create common SMD groups
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/create_groups_common.yml"
-      loop: "{{ hostvars['localhost']['common_cloud_init_groups'] }}"
+      loop: "{{ common_cloud_init_groups }}"
       loop_control:
         loop_var: item
 
