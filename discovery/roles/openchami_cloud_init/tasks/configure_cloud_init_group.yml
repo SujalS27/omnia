@@ -33,7 +33,7 @@
   block:
     - name: Load ci group template - {{ functional_group_name }}
       ansible.builtin.template:
-        src: "cloud_init/ci-group-{{ functional_group_name }}.yaml.j2"
+        src: "ci-group-{{ functional_group_name }}.yaml.j2"
         dest: "{{ cloud_init_dir }}/ci-group-{{ functional_group_name }}.yaml"
         mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
   rescue:

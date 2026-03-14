@@ -24,7 +24,7 @@
 
 - name: Render ci group common template
   ansible.builtin.template:
-    src: "{{ ci_group_common_template }}"
+    src: "ci-group-common.yaml.j2"
     dest: "{{ ci_group_common_dest }}"
     mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
 

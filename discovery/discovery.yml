@@ -130,8 +130,8 @@
   hosts: localhost
   connection: local
   roles:
-    - passwordless_ssh
-    tasks_from: read_nodes_yaml.yml
+    - role: passwordless_ssh
+      tasks_from: read_nodes_yaml.yml
 
 - name: Validate discovery parameters
   hosts: oim

@@ -65,7 +65,7 @@
 
     - name: Load ci defaults template
       ansible.builtin.template:
-        src: "{{ role_path }}/templates/{{ ci_defaults_template }}"
+        src: "ci-defaults.yaml.j2"
         dest: "{{ ci_defaults_dest }}"
         mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
 

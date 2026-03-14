@@ -16,6 +16,15 @@
 # OpenChami Cloud-Init Global Variables
 # Centralized cloud-init paths, templates, and configurations for discovery and provisioning
 
+# Input Project Directory
+input_project_dir: "{{ hostvars['localhost']['input_project_dir'] }}"
+
+# Software Config File Path
+software_config_file: "{{ hostvars['localhost']['input_project_dir'] }}/software_config.json"
+
+# Local Repo Config Path
+local_repo_config_path: "{{ hostvars['localhost']['input_project_dir'] }}/local_repo_config.yml"
+
 # Cloud-Init Directories
 ci_defaults_dest: "{{ cloud_init_dir }}/ci-defaults.yaml"
 ci_group_common_dest: "{{ cloud_init_dir }}/ci-group-common.yaml"

@@ -15,7 +15,7 @@
 
 - name: Load software_config.json
   ansible.builtin.include_vars:
-    file: "{{ software_config_file_path }}"
+    file: "{{ software_config_file }}"
     name: software_config
   delegate_to: localhost
   run_once: true
