@@ -98,5 +98,22 @@ openldap_container_missing_msg: "{{ '\x1b[31m' }}\
   4. Then re-run discovery.yml\n\
   \n\
   For more information, refer to the Omnia documentation on OpenLDAP configuration.\n\
-  ==================================================================================\
+  ==================================================================================\n\
   {{ '\x1b[0m' }}"
+
+# Usage: discovery_completion.yml
+discovery_completion_msg: |
+  =================================================================================================
+  Discovery phase completed successfully!
+  
+  Next steps:
+  1. Verify all nodes are discovered and configured in OpenCHAMI
+  2. Check cloud-init templates are properly generated
+  3. Proceed with node provisioning using PXE boot
+  4. Monitor node initialization and role assignment
+  
+  For troubleshooting, check:
+  - OpenCHAMI service status: systemctl status openchami.target
+  - Node discovery logs: /opt/omnia/log/openchami/
+  - Cloud-init configuration: /opt/omnia/openchami/workdir/cloud-init/
+  =================================================================================================

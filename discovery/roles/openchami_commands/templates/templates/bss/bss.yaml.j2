@@ -1,0 +1,10 @@
+---
+kernel: 'http://{{ cluster_boot_ip }}:9000/{{ kernel }}'
+initrd: 'http://{{ cluster_boot_ip }}:9000/{{ initrd }}'
+params: 'nomodeset ro root=live:http://{{ cluster_boot_ip }}:9000/boot-images/{{ functional_group_name }}/rhel-{{ functional_group_name }}/rhel{{ hostvars['localhost']['cluster_os_version'] }}-rhel-{{ functional_group_name }}-{{ hostvars['localhost']['cluster_os_version'] }} {{ bss_params_opts }} {{ bss_params_cloud_init }}'
+macs:
+{% for item in nodes %}
+{% if item.group == functional_group_name %}
+  - {{ item.interfaces[0].mac_addr }}
+{% endif %}
+{% endfor %}

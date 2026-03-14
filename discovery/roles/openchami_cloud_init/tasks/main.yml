@@ -14,13 +14,13 @@
 ---
 
 - name: Include openchami commands
-  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
+  ansible.builtin.include_vars: "{{ role_path }}/../openchami_commands/vars/main.yml"
 
 - name: Include openchami cloud-init vars
-  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_cloud_init_vars.yml"
+  ansible.builtin.include_vars: "{{ role_path }}/vars/main.yml"
 
-- name: Include configure ochami vars
-  ansible.builtin.include_vars: "{{ role_path }}/../configure_ochami/vars/main.yml"
+- name: Fetch additional container images
+  ansible.builtin.include_tasks: "{{ role_path }}/tasks/fetch_additional_images.yml"
 
 - name: Configure cloud-init
   environment: "{{ hostvars['oim']['ochami_env'] }}"

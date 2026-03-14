@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 - name: Include openchami commands
-  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
+  ansible.builtin.include_vars: "{{ role_path }}/vars/main.yml"
 
 - name: Set the common_group_name
   ansible.builtin.set_fact:

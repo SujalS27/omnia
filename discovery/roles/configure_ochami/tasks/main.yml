@@ -1,4 +1,4 @@
-# Copyright 2026 Dell Inc. or its subsidiaries. All Rights Reserved.
+# Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,27 +13,17 @@
 # limitations under the License.
 ---
 
-- name: Refresh SMD access token before ochami operations
-  ansible.builtin.include_tasks: "{{ role_path }}/../../../common/tasks/common/openchami_auth.yml"
-  vars:
-    oim_node_name: "{{ hostvars['localhost']['oim_node_name'] }}"
+# Configure Ochami orchestrator role - delegates to specialized roles
+- name: Orchestrate OpenChami commands
+  ansible.builtin.include_role:
+    name: openchami_commands
+  tags:
+    - openchami_commands
+  when: ansible_run_tags is not defined or 'openchami_commands' in ansible_run_tags
 
-- name: Configure the ochami
-  environment: "{{ hostvars['oim']['ochami_env'] }}"
-  block:
-    - name: Create groups
-      ansible.builtin.include_tasks: create_groups.yml
-      with_items: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
-
-    - name: Fecth image of additional_packages.json file
-      ansible.builtin.include_tasks: fetch_additional_images.yml
-
-    - name: Create groups common
-      ansible.builtin.include_tasks: create_groups_common.yml
-      loop: "{{ common_cloud_init_groups }}"
-
-    - name: Configure bss and cloud-init
-      ansible.builtin.include_tasks: configure_bss_cloud_init.yml
-
-    - name: Discovery completion
-      ansible.builtin.include_tasks: discovery_completion.yml
+- name: Orchestrate cloud-init configuration  
+  ansible.builtin.include_role:
+    name: openchami_cloud_init
+  tags:
+    - cloud_init
+  when: ansible_run_tags is not defined or 'cloud_init' in ansible_run_tags

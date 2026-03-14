@@ -14,7 +14,7 @@
 ---
 
 - name: Include openchami commands
-  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
+  ansible.builtin.include_vars: "{{ role_path }}/vars/main.yml"
 
 - name: Get existing SMD groups
   ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.smd_group_get }}"

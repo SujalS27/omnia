@@ -13,6 +13,9 @@
 #  limitations under the License.
 ---
 
+- name: Include discovery validation vars
+  ansible.builtin.include_vars: "{{ playbook_dir }}/roles/discovery_validations/vars/main.yml"
+
 - name: Discovery completion
   ansible.builtin.debug:
     msg: "{{ discovery_completion_msg.splitlines() | join(' ') }}"

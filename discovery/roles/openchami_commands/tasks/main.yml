@@ -14,7 +14,10 @@
 ---
 
 - name: Include openchami commands
-  ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
+  ansible.builtin.include_vars: "{{ role_path }}/vars/main.yml"
+
+- name: Include openchami vars
+  ansible.builtin.include_vars: "{{ openchami_config_vars_path }}"
 
 - name: Configure the ochami
   environment: "{{ hostvars['oim']['ochami_env'] }}"
@@ -23,9 +26,6 @@
       ansible.builtin.command: chcon -R system_u:object_r:container_file_t:s0 "{{ hostvars['localhost']['oim_shared_path'] }}/omnia/openchami"
       changed_when: true
       failed_when: false
-
-    - name: Include openchami vars
-      ansible.builtin.include_vars: "{{ openchami_config_vars_path }}"
 
     - name: Create ochami nodes directory
       ansible.builtin.file:
@@ -39,7 +39,7 @@
 
     - name: Load the openchami nodes.yaml
       ansible.builtin.template:
-        src: "{{ playbook_dir }}/roles/configure_ochami/templates/nodes/nodes.yaml.j2"
+        src: "{{ openchami_nodes_template }}"
         dest: "{{ openchami_nodes_vars_path }}"
         mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
 
@@ -51,15 +51,36 @@
 
     - name: Load BMC-group data file
       ansible.builtin.template:
-        src: "{{ playbook_dir }}/roles/configure_ochami/templates/nodes/bmc_group_data.csv.j2"
+        src: "{{ bmc_group_data_template }}"
         dest: "{{ bmc_group_data_file }}"
         mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
-        vars:
-          nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
-          group_data: "{{ (lookup('file', hostvars['localhost']['functional_groups_config_path']) | from_yaml).groups }}"
+      vars:
+        nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
+        group_data: "{{ (lookup('file', hostvars['localhost']['functional_groups_config_path']) | from_yaml).groups }}"
 
     - name: Delete smd configuration
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/delete_smd_config.yml"
+
+    - name: Restart the cloud-init service to clear node instance data
+      ansible.builtin.service:
+        name: cloud-init-server
+        state: restarted
+
+    - name: Check whether openchami.target is up
+      ansible.builtin.service:
+        name: openchami.target
+        state: started
+      register: openchami_target_status
+      retries: 4
+      delay: 5
+      until: openchami_target_status is success
+
+    - name: Fail if openchami.target is not up
+      ansible.builtin.fail:
+        msg: "openchami.target is not up"
+      when:
+        - openchami_target_status is defined
+        - openchami_target_status is not success
 
     - name: Discover ochami nodes
       block:
@@ -87,12 +108,30 @@
 
     - name: Load the openchami hostname.yaml
       ansible.builtin.template:
-        src: "{{ playbook_dir }}/roles/configure_ochami/templates/nodes/hostname.yaml.j2"
+        src: "{{ openchami_hostname_template }}"
         dest: "{{ openchami_hostname_vars_path }}"
         mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
-        vars:
-          nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
+      vars:
+        nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
 
     - name: Configure the hostname
       ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_node_set }} @\"{{ openchami_hostname_vars_path }}\""
       changed_when: true
+
+    - name: Create functional SMD groups
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/create_groups.yml"
+      loop: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
+      loop_control:
+        loop_var: item
+
+    - name: Create common SMD groups
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/create_groups_common.yml"
+      loop: "{{ hostvars['localhost']['common_cloud_init_groups'] }}"
+      loop_control:
+        loop_var: item
+
+    - name: Configure BSS and cloud-init
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/configure_bss_cloud_init.yml"
+
+    - name: Discovery completion
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/discovery_completion.yml"

@@ -165,7 +165,7 @@
   pre_tasks:
     - name: Prepare OpenChami discovery artifacts
       ansible.builtin.include_role:
-        name: configure_ochami
+        name: openchami_commands
         tasks_from: discover_mapping_nodes.yml
 
     - name: Read nodes.yaml and derive Omnia node facts
@@ -176,22 +176,6 @@
     - name: Run OpenChami commands
       ansible.builtin.include_role:
         name: openchami_commands
-
-    - name: Create and manage SMD groups
-      ansible.builtin.include_role:
-        name: configure_ochami
-        tasks_from: create_groups.yml
-      loop: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
-      loop_control:
-        loop_var: item
-
-    - name: Apply SMD group commands
-      ansible.builtin.include_role:
-        name: openchami_commands
-        tasks_from: create_groups_commands.yml
-      loop: "{{ hostvars['localhost']['functional_groups'] | map(attribute='name') | list }}"
-      loop_control:
-        loop_var: item
 
 # Cloud-init Configuration (NEW - Tag: cloud_init)
 - name: Cloud-init Configuration
@@ -205,7 +189,7 @@
 
     - name: Create common SMD groups
       ansible.builtin.include_role:
-        name: configure_ochami
+        name: openchami_commands
         tasks_from: create_groups_common.yml
       loop: "{{ common_cloud_init_groups }}"
       loop_control:
@@ -213,7 +197,7 @@
 
     - name: Configure BSS boot parameters
       ansible.builtin.include_role:
-        name: configure_ochami
+        name: openchami_commands
         tasks_from: configure_bss_cloud_init.yml
 
 - name: Configure node roles
@@ -244,5 +228,5 @@
   tasks:
     - name: Discovery completion
       ansible.builtin.include_role:
-        name: configure_ochami
+        name: openchami_commands
         tasks_from: discovery_completion.yml

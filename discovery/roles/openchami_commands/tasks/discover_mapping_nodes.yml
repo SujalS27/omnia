@@ -24,22 +24,21 @@
     - name: Include openchami vars
       ansible.builtin.include_vars: "{{ openchami_config_vars_path }}"
 
-    - name: Include openchami commands
-      ansible.builtin.include_vars: "{{ role_path }}/../../../common/vars/openchami_commands.yml"
-
     - name: Create ochami nodes directory
       ansible.builtin.file:
         path: "{{ nodes_dir }}"
         state: directory
         mode: "{{ hostvars['localhost']['dir_permissions_755'] }}"
 
+    - name: Set nodes fact for template
+      ansible.builtin.set_fact:
+        nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
+
     - name: Load the openchami nodes.yaml
       ansible.builtin.template:
         src: "{{ openchami_nodes_template }}"
         dest: "{{ openchami_nodes_vars_path }}"
         mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
-      vars:
-        nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
 
     - name: Create telemetry directory
       ansible.builtin.file:
@@ -52,12 +51,12 @@
         src: "{{ bmc_group_data_template }}"
         dest: "{{ bmc_group_data_file }}"
         mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
-      vars:
-        nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
-        group_data: "{{ (lookup('file', hostvars['localhost']['functional_groups_config_path']) | from_yaml).groups }}"
+        vars:
+          nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
+          group_data: "{{ (lookup('file', hostvars['localhost']['functional_groups_config_path']) | from_yaml).groups }}"
 
     - name: Delete smd configuration
-      ansible.builtin.include_tasks: "{{ role_path }}/../openchami_commands/tasks/delete_smd_config.yml"
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/delete_smd_config.yml"
 
     - name: Restart the cloud-init service to clear node instance data
       ansible.builtin.service:
@@ -95,8 +94,7 @@
     - name: Verify node created in smd
       ansible.builtin.shell: |
         set -o pipefail && \
-        {{ openchami_cli_path }} {{ openchami_commands.smd_component_get }} | jq '.Components[] | select(.Type == "Node")'
-      environment: "{{ ochami_env }}"
+        {{ openchami_cli_path }} {{ openchami_commands.smd_component_get_nodes }}
       changed_when: true
       register: openchami_smd_status
 
@@ -110,10 +108,9 @@
         src: "{{ openchami_hostname_template }}"
         dest: "{{ openchami_hostname_vars_path }}"
         mode: "{{ hostvars['localhost']['file_permissions_644'] }}"
-      vars:
-        nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
+        vars:
+          nodes: "{{ hostvars['localhost']['read_mapping_file']['dict'] | dict2items }}"
 
     - name: Configure the hostname
-      ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_node_set_yaml }} @{{ openchami_hostname_vars_path }}"
-      environment: "{{ ochami_env }}"
+      ansible.builtin.command: "{{ openchami_cli_path }} {{ openchami_commands.cloud_init_node_set }} @\"{{ openchami_hostname_vars_path }}\""
       changed_when: true
