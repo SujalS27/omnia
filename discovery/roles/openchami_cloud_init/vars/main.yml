@@ -50,13 +50,30 @@ ci_group_load_fail_msg: |
 ssh_key_path: /root/.ssh/oim_rsa.pub
 slurm_control_ssh_patterns: []
 slurm_node_ssh_patterns: []
+k8s_control_ssh_patterns: "{{ hostvars['localhost']['k8s_ssh_patterns'] | default('*') }}"
+
+# Cloud-Init Container Registry Configuration
+pulp_mirror: "{{ hostvars['localhost']['admin_nic_ip'] | default('localhost') }}:2225"
+
+# Cloud-Init Network Configuration (inherited from discovery_validations)
+admin_nic_ip: "{{ hostvars['localhost']['admin_nic_ip'] | default('') }}"
+admin_nic: "{{ hostvars['localhost']['admin_nic'] | default('') }}"
+admin_netmask_bits: "{{ hostvars['localhost']['admin_netmask_bits'] | default('') }}"
+ib_network_subnet: "{{ hostvars['localhost']['ib_network_subnet'] | default('') }}"
+dns: "{{ hostvars['localhost']['dns'] | default('') }}"
+
+# Cloud-Init NFS Paths (set by k8s_config role)
+k8s_client_mount_path: "{{ k8s_client_mount_path | default('') }}"
+k8s_nfs_server_ip: "{{ k8s_nfs_server_ip | default('') }}"
+k8s_server_share_path: "{{ k8s_server_share_path | default('') }}"
+k8s_crio_storage_size: "{{ k8s_crio_storage_size | default('') }}"
+client_mount_path: "/mnt/ldms"
 
 # Cloud-Init NFS Paths for Slurm Nodes
 cloud_init_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] | default('', true) }}:{{ hostvars['localhost']['slurm_nfs_path'] | default('/mnt/share/omnia') }}"
 cloud_init_slurm_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] | default('', true) }}:{{ hostvars['localhost']['slurm_nfs_path'] | default('/mnt/share/omnia') }}"
 cloud_init_nfs_path_openldap: "{{ hostvars['localhost']['ldap_nfs_server'] | default(hostvars['localhost']['slurm_nfs_server'] | default('', true), true) }}:{{ hostvars['localhost']['ldap_nfs_path'] | default('/mnt/share/openldap') }}"
 trackfile_nfs_path: "{{ hostvars['localhost']['slurm_nfs_server'] | default('', true) }}:{{ hostvars['localhost']['slurm_nfs_path'] | default('/mnt/share/omnia') }}/track"
-client_mount_path: "/mnt/ldms"
 
 # Cloud-Init LDAP defaults to avoid undefined template failures
 connection_type: "tls"

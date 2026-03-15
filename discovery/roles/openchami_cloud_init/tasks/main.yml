@@ -19,6 +19,10 @@
 - name: Include openchami cloud-init vars
   ansible.builtin.include_vars: "{{ role_path }}/vars/main.yml"
 
+- name: Load K8S variables for cloud-init templates
+  ansible.builtin.include_tasks: "{{ role_path }}/tasks/derive_k8s_facts.yml"
+  when: hostvars['localhost']['service_k8s_support'] | default(false)
+
 - name: Fetch additional container images
   ansible.builtin.include_tasks: "{{ role_path }}/tasks/fetch_additional_images.yml"
 

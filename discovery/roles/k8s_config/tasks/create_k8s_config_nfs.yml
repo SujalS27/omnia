@@ -20,6 +20,7 @@
 
 - name: Include include_high_availability_config vars
   ansible.builtin.include_vars: "{{ ha_config_file }}"
+  when: ha_config_file is defined and ha_config_file is file
 
 - name: Set facts for service_k8s
   ansible.builtin.set_fact:

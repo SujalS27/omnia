@@ -22,6 +22,7 @@
     openchami_vars_support: true
     openchami_cloud_init_support: true
     omnia_metadata_support: true
+  tags: always
 
 - name: Create oim group and provision group
   ansible.builtin.import_playbook: ../utils/create_container_group.yml
