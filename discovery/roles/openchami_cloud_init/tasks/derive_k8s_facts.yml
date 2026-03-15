@@ -60,8 +60,29 @@
   delegate_facts: true
   run_once: true
   when:
-    - hostvars['localhost']['nfs_client_params'] is defined
-    - hostvars['localhost']['software_config'] is defined
+    - hostvars['localhost']['service_k8s_support'] | default(false)
+
+- name: Set basic facts for cloud-init templates when K8S not supported
+  ansible.builtin.set_fact:
+    offline_pip_module_path: "{{ hostvars['localhost']['offline_pip_module_path'] | default('') }}"
+    pulp_server_ip: >-
+      {{ hostvars['localhost']['pulp_server_ip']
+         | default(
+             (hostvars['localhost']['offline_pip_module_path'] | default('') | urlsplit('hostname'))
+             | default(
+                 (hostvars[inventory_hostname]['offline_pip_module_path'] | default('') | urlsplit('hostname'))
+                 | default(hostvars[inventory_hostname]['pulp_server_ip'] | default(hostvars['localhost']['admin_nic_ip'] | default(''), true), true),
+                 true
+               ),
+             true
+           )
+      }}
+    k8s_pip_packages: "{{ hostvars['localhost']['k8s_pip_packages'] | default([]) }}"
+  delegate_to: localhost
+  delegate_facts: true
+  run_once: true
+  when:
+    - not (hostvars['localhost']['service_k8s_support'] | default(false))
 
 - name: Compute service_k8s packages file path
   ansible.builtin.set_fact:
