@@ -19,6 +19,13 @@
 - name: Include openchami cloud-init vars
   ansible.builtin.include_vars: "{{ role_path }}/vars/main.yml"
 
+- name: Load high availability configuration
+  ansible.builtin.include_vars:
+    file: "{{ input_project_dir }}/high_availability_config.yml"
+  when: 
+    - input_project_dir is defined
+    - hostvars['localhost']['service_k8s_support'] | default(false)
+
 - name: Load K8S variables for cloud-init templates
   ansible.builtin.include_tasks: "{{ role_path }}/tasks/derive_k8s_facts.yml"
 

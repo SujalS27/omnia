@@ -30,28 +30,24 @@
            )
       }}
     enable_k8s_ha: >-
-      {{ hostvars['localhost']['enable_k8s_ha']
-          | default(
-              (
-                service_k8s_cluster_ha
-                | default([])
-                | selectattr('cluster_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].cluster_name | default(''))
-                | map(attribute='enable_k8s_ha')
-                | list
-              ) | first | default(false)
-            )
+      {{ 
+        (
+          hostvars['localhost']['service_k8s_cluster_ha']
+          | default([])
+          | selectattr('cluster_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].cluster_name | default(''))
+          | map(attribute='enable_k8s_ha')
+          | list
+        ) | first | default(false)
       }}
     kube_vip: >-
-      {{ hostvars['localhost']['kube_vip']
-          | default(
-              (
-                service_k8s_cluster_ha
-                | default([])
-                | selectattr('cluster_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].cluster_name | default(''))
-                | map(attribute='virtual_ip_address')
-                | list
-              ) | first | default('')
-            )
+      {{ 
+        (
+          hostvars['localhost']['service_k8s_cluster_ha']
+          | default([])
+          | selectattr('cluster_name', 'equalto', (hostvars['localhost']['service_k8s_cluster'] | default([{}]))[0].cluster_name | default(''))
+          | map(attribute='virtual_ip_address')
+          | list
+        ) | first | default('')
       }}
     service_k8s_version: "{{ hostvars['localhost']['service_k8s_version'] | default(service_k8s_cluster[0].k8s_version | default('')) }}"
     k8s_pip_packages: "{{ hostvars['localhost']['k8s_pip_packages'] | default([]) }}"
