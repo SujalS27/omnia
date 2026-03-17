@@ -54,6 +54,7 @@ k8s_control_ssh_patterns: "{{ hostvars['localhost']['k8s_ssh_patterns'] | defaul
 
 # Cloud-Init Container Registry Configuration
 pulp_mirror: "{{ hostvars['localhost']['admin_nic_ip'] | default('localhost') }}:2225"
+offline_pip_module_path: "{{ hostvars['localhost']['offline_pip_module_path'] | default('') }}"
 
 # Cloud-Init Network Configuration (inherited from discovery_validations)
 admin_nic_ip: "{{ hostvars['localhost']['admin_nic_ip'] | default('') }}"
