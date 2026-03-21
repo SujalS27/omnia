@@ -1,0 +1,24 @@
+[domain/default]
+id_provider = ldap
+auth_provider = ldap
+ldap_uri = {{ hostvars['localhost']['ldap_server_url'] | default('ldap://localhost') }}
+ldap_search_base = {{ hostvars['localhost']['ldap_base_dn'] | default('dc=example,dc=com') }}
+ldap_default_bind_dn = {{ hostvars['localhost']['ldap_bind_dn'] | default('cn=admin,dc=example,dc=com') }}
+ldap_default_authtok_type = password
+ldap_default_authtok = {{ hostvars['localhost']['ldap_bind_password'] | default('') }}
+cache_credentials = True
+ldap_id_use_start_tls = true
+ldap_tls_reqcert = allow
+ldap_tls_cacertdir = /etc/openldap/cacerts
+ldap_tls_cacertfile = /etc/openldap/cacerts/ca-certificates.crt
+
+[sssd]
+services = nss, pam
+domains = default
+
+[nss]
+filter_groups = root
+filter_users = root
+
+[pam]
+pam_pwd_expiration_warning = 365

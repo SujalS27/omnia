@@ -1,0 +1,62 @@
+---
+
+- name: Set basic slurm facts for cloud-init templates
+  ansible.builtin.set_fact:
+    slurm_user: "{{ hostvars['localhost']['slurm_user'] | default('slurm') }}"
+    slurm_uid: "{{ hostvars['localhost']['slurm_uid'] | default('6001') }}"
+  delegate_to: localhost
+  delegate_facts: true
+  run_once: true
+
+- name: Compute slurm packages file path
+  ansible.builtin.set_fact:
+    slurm_packages_file: "{{ hostvars['localhost']['input_project_dir'] }}/config/x86_64/{{ hostvars['localhost']['software_config'].cluster_os_type }}/{{ hostvars['localhost']['software_config'].cluster_os_version }}/slurm_custom.json"
+  delegate_to: localhost
+  run_once: true
+  when:
+    - hostvars['localhost']['input_project_dir'] is defined
+    - hostvars['localhost']['software_config'] is defined
+
+- name: Ensure slurm packages file exists
+  ansible.builtin.stat:
+    path: "{{ slurm_packages_file }}"
+  delegate_to: localhost
+  run_once: true
+  register: slurm_packages_file_stat
+  when:
+    - slurm_packages_file is defined
+
+- name: Load slurm_custom.json
+  ansible.builtin.set_fact:
+    slurm_packages_json: "{{ lookup('file', slurm_packages_file) | from_json }}"
+  delegate_to: localhost
+  run_once: true
+  when:
+    - slurm_packages_file_stat is defined
+    - slurm_packages_file_stat.stat is defined
+    - slurm_packages_file_stat.stat.exists | default(false)
+
+- name: Derive package names for cloud-init templates
+  ansible.builtin.set_fact:
+    slurm_custom_packages: "{{ slurm_packages_json['slurm_custom']['cluster'] | map(attribute='package') | list }}"
+    slurm_control_node_packages: "{{ slurm_packages_json['slurm_control_node']['cluster'] | map(attribute='package') | list }}"
+    slurm_node_packages: "{{ slurm_packages_json['slurm_node']['cluster'] | map(attribute='package') | list }}"
+  delegate_to: localhost
+  delegate_facts: true
+  run_once: true
+  when:
+    - slurm_packages_json is defined
+
+- name: Propagate slurm facts to all hosts
+  ansible.builtin.set_fact:
+    slurm_user: "{{ hostvars['localhost']['slurm_user'] | default('') }}"
+    slurm_uid: "{{ hostvars['localhost']['slurm_uid'] | default('') }}"
+    slurm_custom_packages: "{{ hostvars['localhost']['slurm_custom_packages'] | default([]) }}"
+    slurm_control_node_packages: "{{ hostvars['localhost']['slurm_control_node_packages'] | default([]) }}"
+    slurm_node_packages: "{{ hostvars['localhost']['slurm_node_packages'] | default([]) }}"
+  delegate_to: "{{ host_item }}"
+  delegate_facts: true
+  run_once: true
+  loop: "{{ ansible_play_hosts_all | default(ansible_play_hosts) }}"
+  loop_control:
+    loop_var: host_item

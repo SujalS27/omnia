@@ -31,14 +31,12 @@
 - name: Load K8S variables for cloud-init templates
   ansible.builtin.include_tasks: "{{ role_path }}/tasks/derive_k8s_facts.yml"
 
-- name: Debug - Check if variables are derived correctly
-  ansible.builtin.debug:
-    msg:
-      - "service_k8s_cluster: {{ service_k8s_cluster | default('NOT_FOUND') }}"
-      - "service_k8s_cluster_ha: {{ service_k8s_cluster_ha | default('NOT_FOUND') }}"
-      - "enable_k8s_ha: {{ enable_k8s_ha | default('NOT_DERIVED') }}"
-      - "kube_vip: {{ kube_vip | default('NOT_SET') }}"
-  verbosity: 1
+- name: Load Slurm variables for cloud-init templates
+  ansible.builtin.include_tasks: "{{ role_path }}/tasks/derive_slurm_facts.yml"
+  when: 
+    - hostvars['localhost']['software_config'] is defined
+    - (hostvars['localhost']['software_config'].softwares | selectattr('name', 'in', ['slurm', 'slurm_custom']) | list | length > 0)
+    - (hostvars['localhost']['functional_groups'] | default([]) | selectattr('name', 'match', '^slurm_') | list | length > 0) | default(false) | bool
 
 - name: Fetch additional container images
   ansible.builtin.include_tasks: "{{ role_path }}/tasks/fetch_additional_images.yml"

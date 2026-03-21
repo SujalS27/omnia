@@ -469,6 +469,10 @@
             sed -i "s/value: vip_interface/value: ${VIP_IFACE}/" /tmp/kube-vip.yaml
             mkdir -p /etc/kubernetes/manifests/
             cp /tmp/kube-vip.yaml /etc/kubernetes/manifests/kube-vip.yaml
+            
+            # Fix kube-vip bootstrap: temporarily use local IP in kubeconfig
+            cp /etc/kubernetes/admin.conf /etc/kubernetes/admin.conf.backup
+            sed -i "s|server: https://[^:]*:6443|server: https://${NODE_IP}:6443|" /etc/kubernetes/admin.conf
 
             /usr/local/bin/k8s-cluster-setup.sh || true
             mkdir -p $HOME/.kube
@@ -631,6 +635,12 @@
             
             VIP="{{ kube_vip }}"
             KUBE_PORT="6443"
+            
+            # Restore original kubeconfig before updating to VIP
+            if [ -f "/etc/kubernetes/admin.conf.backup" ]; then
+              cp /etc/kubernetes/admin.conf.backup /etc/kubernetes/admin.conf
+            fi
+            
             sed -i "s|server: https://[^:]*:${KUBE_PORT}|server: https://${VIP}:${KUBE_PORT}|" /etc/kubernetes/admin.conf
             KUBECONFIG="${HOME}/.kube/config"
             if [ -f "$KUBECONFIG" ]; then

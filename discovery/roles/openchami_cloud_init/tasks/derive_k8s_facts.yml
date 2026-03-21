@@ -3,28 +3,28 @@
 - name: Derive k8s facts (nfs, crio, pulp, admin) on localhost
   ansible.builtin.set_fact:
     k8s_nfs_name: "{{ (service_k8s_cluster | default([{}]))[0].nfs_storage_name }}"
-    k8s_nfs_entry: "{{ nfs_client_params | selectattr('nfs_name', 'equalto', (service_k8s_cluster | default([{}]))[0].nfs_storage_name) | list | first | default({}) }}"
-    k8s_nfs_server_ip: "{{ (nfs_client_params | selectattr('nfs_name', 'equalto', (service_k8s_cluster | default([{}]))[0].nfs_storage_name) | first).server_ip | default('') }}"
-    k8s_server_share_path: "{{ (nfs_client_params | selectattr('nfs_name', 'equalto', (service_k8s_cluster | default([{}]))[0].nfs_storage_name) | first).server_share_path | default('') }}"
-    k8s_client_mount_path: "{{ (nfs_client_params | selectattr('nfs_name', 'equalto', (service_k8s_cluster | default([{}]))[0].nfs_storage_name) | first).client_share_path | default('') }}"
+    k8s_nfs_entry: "{{ hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (service_k8s_cluster | default([{}]))[0].nfs_storage_name) | list | first | default({}) }}"
+    k8s_nfs_server_ip: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (service_k8s_cluster | default([{}]))[0].nfs_storage_name) | first).server_ip | default('') }}"
+    k8s_server_share_path: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (service_k8s_cluster | default([{}]))[0].nfs_storage_name) | first).server_share_path | default('') }}"
+    k8s_client_mount_path: "{{ (hostvars['localhost']['nfs_client_params'] | selectattr('nfs_name', 'equalto', (service_k8s_cluster | default([{}]))[0].nfs_storage_name) | first).client_share_path | default('') }}"
     k8s_crio_storage_size: "{{ (service_k8s_cluster | default([{}]))[0].k8s_crio_storage_size | default('') }}"
     k8s_cni: "{{ (service_k8s_cluster | default([{}]))[0].k8s_cni | default('') }}"
     k8s_service_addresses: "{{ (service_k8s_cluster | default([{}]))[0].k8s_service_addresses | default('') }}"
     k8s_pod_network_cidr: "{{ (service_k8s_cluster | default([{}]))[0].k8s_pod_network_cidr | default('') }}"
     pod_external_ip_range: "{{ (service_k8s_cluster | default([{}]))[0].pod_external_ip_range | default('') }}"
-    admin_nic_ip: "{{ admin_nic_ip | default('') }}"
-    admin_netmask_bits: "{{ admin_netmask_bits | default('') }}"
-    admin_nic_cidr: "{{ (admin_nic_ip | default('') ~ '/' ~ admin_netmask_bits | default('')) | ansible.utils.ipaddr('network/prefix') if (admin_nic_ip is defined and admin_netmask_bits is defined and admin_nic_ip|string != '' and admin_netmask_bits|string != '') else '' }}"
-    dns: "{{ dns | default([]) }}"
-    offline_pip_module_path: "{{ offline_pip_module_path | default('') }}"
-    pulp_mirror: "{{ admin_nic_ip | default('') }}:2225"
+    admin_nic_ip: "{{ hostvars['localhost']['admin_nic_ip'] | default('') }}"
+    admin_netmask_bits: "{{ hostvars['localhost']['admin_netmask_bits'] | default('') }}"
+    admin_nic_cidr: "{{ (hostvars['localhost']['admin_nic_ip'] | default('') ~ '/' ~ hostvars['localhost']['admin_netmask_bits'] | default('')) | ansible.utils.ipaddr('network/prefix') if (hostvars['localhost']['admin_nic_ip'] is defined and hostvars['localhost']['admin_netmask_bits'] is defined and hostvars['localhost']['admin_nic_ip']|string != '' and hostvars['localhost']['admin_netmask_bits']|string != '') else '' }}"
+    dns: "{{ hostvars['localhost']['dns'] | default([]) }}"
+    offline_pip_module_path: "{{ hostvars['localhost']['offline_pip_module_path'] | default('') }}"
+    pulp_mirror: "{{ hostvars['localhost']['admin_nic_ip'] | default('') }}:2225"
     pulp_server_ip: >-
-      {{ pulp_server_ip
+      {{ hostvars['localhost']['pulp_server_ip']
          | default(
-             (offline_pip_module_path | default('') | urlsplit('hostname'))
+             (hostvars['localhost']['offline_pip_module_path'] | default('') | urlsplit('hostname'))
              | default(
-                 (hostvars[inventory_hostname]['offline_pip_module_path'] | default('') | urlsplit('hostname')
-                 | default(hostvars[inventory_hostname]['pulp_server_ip'] | default(admin_nic_ip | default(''), true), true),
+                 (hostvars[inventory_hostname]['offline_pip_module_path'] | default('') | urlsplit('hostname'))
+                 | default(hostvars[inventory_hostname]['pulp_server_ip'] | default(hostvars['localhost']['admin_nic_ip'] | default(''), true), true),
                  true
                ),
              true
@@ -50,9 +50,14 @@
           | list
         ) | first | default('')
       }}
-    service_k8s_version: "{{ service_k8s_version | default(service_k8s_cluster[0].k8s_version | default('')) }}"
-    k8s_pip_packages: "{{ k8s_pip_packages | default([]) }}"
-    csi_driver_powerscale_support: "{{ software_config.softwares | selectattr('name', 'equalto', 'csi_driver_powerscale') | list | length > 0 }}"
+    service_k8s_version: "{{ hostvars['localhost']['service_k8s_version'] | default(service_k8s_cluster[0].k8s_version | default('')) }}"
+    k8s_pip_packages: "{{ hostvars['localhost']['k8s_pip_packages'] | default([]) }}"
+    csi_driver_powerscale_support: "{{ hostvars['localhost']['software_config'].softwares | selectattr('name', 'equalto', 'csi_driver_powerscale') | list | length > 0 }}"
+  delegate_to: localhost
+  delegate_facts: true
+  run_once: true
+  when:
+    - hostvars['localhost']['service_k8s_support'] | default(false)
 
 - name: Set basic facts for cloud-init templates when K8S not supported
   ansible.builtin.set_fact:
@@ -161,6 +166,7 @@
       k8s NFS details are not defined. Ensure storage_config contains nfs_name '{{ hostvars['localhost']['k8s_nfs_name'] | default('nfs_k8s') }}'
       with server_ip/server_share_path/client_share_path.
   when:
+    - hostvars['localhost']['service_k8s_support'] | default(false) | bool
     - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string == ''
       or hostvars['localhost']['k8s_server_share_path'] | default('') | string == ''
 
@@ -170,6 +176,7 @@
       Required K8s facts missing. Check storage_config nfs entry '{{ hostvars['localhost']['k8s_nfs_name'] | default('nfs_k8s') }}', admin_nic_ip/netmask_bits from network_spec, DNS servers,
       pulp_mirror (<admin_nic_ip>:2225), kube_vip when HA is enabled, and service_k8s_version.
   when:
+    - hostvars['localhost']['service_k8s_support'] | default(false) | bool
     - hostvars['localhost']['k8s_nfs_server_ip'] | default('') | string == ''
       or hostvars['localhost']['k8s_server_share_path'] | default('') | string == ''
       or hostvars['localhost']['admin_nic_ip'] | default('') | string == ''
