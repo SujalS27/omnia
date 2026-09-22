@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2026 Dell Inc. or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,244 +14,602 @@
 # limitations under the License.
 
 # =============================================================================
-# Utils Domain — Environment Setup Script
+# Utils Domain — Test Environment Setup
 # =============================================================================
-# One-time setup for the test environment.
-# Creates virtual environment, installs dependencies, and configures credentials.
+# Installs test automation dependencies and configures credentials.
+#
+# INSTALL MODES:
+#   Baremetal (default)  — Install into system Python (pip install --user)
+#   Active venv          — Auto-detected; installs into the currently active venv
+#   New venv (--venv)    — Creates .venv/ and installs there
+#
+# TWO CREDENTIAL FILES:
+#   1. test_creds.yml                — SSH password for OIM server access (local).
+#   2. install_os_credentials.yml    — Domain credentials (BMC, OS root password).
+#      Created below UTILS_DATA_PATH when set, otherwise below
+#      $OMNIA_DATA_PATH/utils/input/$OMNIA_PROJECT_NAME/, and encrypted
+#      with ansible-vault.
+#
+# SSH CREDENTIALS:
+#   --set-creds          Interactive prompt (2x confirmation). Asks to update if exists.
+#   --update-creds       Force-update existing SSH password (2x prompt).
+#   --creds-stdin        Read a non-interactive SSH password from stdin.
+#
+# DOMAIN CREDENTIALS:
+#   --set-domain-creds     Interactive prompt for BMC + OS root password.
+#   --update-domain-creds  Force-update domain credentials.
+#   --domain-creds-stdin   Read a non-interactive JSON object from stdin.
 #
 # Usage:
-#   ./setup_env.sh                    # Basic setup
-#   ./setup_env.sh --set-password     # Setup + prompt for SSH password
-#   ./setup_env.sh --set-domain-creds # Setup + prompt for BMC credentials
+#   ./setup_env.sh                        # Baremetal or active venv
+#   ./setup_env.sh --force                # Force-reinstall all requirements
+#   ./setup_env.sh --venv                 # Create .venv/ and install there
+#   ./setup_env.sh --venv --force         # Recreate .venv/ and reinstall requirements
+#   ./setup_env.sh --set-creds            # Prompt for SSH password
+#   ./setup_env.sh --update-creds         # Update existing SSH password
+#   approved-secret-provider | ./setup_env.sh --creds-stdin
+#   ./setup_env.sh --set-domain-creds     # Prompt for BMC + OS root password
+#   credential-json-provider | ./setup_env.sh --domain-creds-stdin
+#   ./setup_env.sh --debug                # Verbose pip output
+#   ./setup_env.sh --help                 # Show this help
 # =============================================================================
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_DIR="${SCRIPT_DIR}/.venv"
-PLUGINS_DIR="${SCRIPT_DIR}/../plugins"
-WHEEL_PATH="${PLUGINS_DIR}/dist/omnia_auto-1.0.0-py3-none-any.whl"
+REQUIREMENTS="${SCRIPT_DIR}/requirements.txt"
+WHEEL_PATH="${SCRIPT_DIR}/../plugins/dist/omnia_auto-1.0.0-py3-none-any.whl"
+cd "$SCRIPT_DIR"
+
+# ── SSH credentials (local) ──
 CREDS_FILE="${SCRIPT_DIR}/test_creds.yml"
 CREDS_KEY="${SCRIPT_DIR}/.test_creds.key"
 
-# Colors
-RED='\033[0;31m'
+# ── Domain credentials (at env-var path) ──
+DOMAIN_CREDS_FILENAME="install_os_credentials.yml"
+DOMAIN_CREDS_KEY_FILENAME=".install_os_credentials.key"
+DOMAIN_NAME="utils"
+DOMAIN_DATA_PATH_ENV="UTILS_DATA_PATH"
+
+# Domain credential spec for install_os
+DOMAIN_CRED_SPEC='[
+  {"field": "bmc_username", "prompt": "BMC Username", "required": true},
+  {"field": "bmc_password", "prompt": "BMC Password", "required": true, "secret": true},
+  {"field": "os_root_password", "prompt": "OS Root Password", "required": true, "secret": true}
+]'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Colors & helpers
+# ─────────────────────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
+RED='\033[0;31m'
 BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
-log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
-log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+info()  { echo -e "  ${BLUE}[...]${NC} $1"; }
+ok()    { echo -e "  ${GREEN}[OK]${NC}  $1"; }
+warn()  { echo -e "  ${YELLOW}[WARN]${NC} $1"; }
+fail()  { echo -e "  ${RED}[FAIL]${NC} $1"; exit 1; }
 
-# Vault key management
-_ensure_vault_key() {
-    if [ ! -f "$CREDS_KEY" ]; then
-        log_info "Generating vault key: .test_creds.key"
-        python3 -c "import secrets; print(secrets.token_urlsafe(32)[:32])" > "$CREDS_KEY"
-        chmod 600 "$CREDS_KEY"
+# ─────────────────────────────────────────────────────────────────────────────
+# Resolve domain creds path from env vars
+# ─────────────────────────────────────────────────────────────────────────────
+_resolve_domain_creds_dir() {
+    local _domain_root=""
+    if [[ -v "$DOMAIN_DATA_PATH_ENV" ]]; then
+        _domain_root="${!DOMAIN_DATA_PATH_ENV}"
     fi
-}
-
-_vault_encrypt() {
-    if command -v ansible-vault &>/dev/null; then
-        ansible-vault encrypt "$CREDS_FILE" --vault-password-file "$CREDS_KEY" 2>/dev/null
-        log_info "Credentials encrypted: test_creds.yml"
-    else
-        log_warn "ansible-vault not found — credentials saved as plain text"
-        log_warn "Install ansible-core and re-run to encrypt"
+    if [ -z "$_domain_root" ]; then
+        _domain_root="${OMNIA_DATA_PATH%/}/${DOMAIN_NAME}"
     fi
+    echo "${_domain_root%/}/input/${OMNIA_PROJECT_NAME}"
 }
 
-_decrypt_creds_temp() {
-    DECRYPTED_CREDS_TMP=$(mktemp)
-    if command -v ansible-vault &>/dev/null && grep -q '^\$ANSIBLE_VAULT' "$CREDS_FILE" 2>/dev/null; then
-        ansible-vault decrypt --output "$DECRYPTED_CREDS_TMP" \
-            --vault-password-file "$CREDS_KEY" "$CREDS_FILE" 2>/dev/null || true
-    else
-        cp "$CREDS_FILE" "$DECRYPTED_CREDS_TMP"
-    fi
+_domain_creds_path() {
+    echo "$(_resolve_domain_creds_dir)/${DOMAIN_CREDS_FILENAME}"
 }
 
-_read_existing_field() {
-    local _field="$1"
-    grep -E "^${_field}:" "$CREDS_FILE" 2>/dev/null \
-        | sed "s/^${_field}:[[:space:]]*//; s/[\"']//g" || true
+_domain_creds_key_path() {
+    echo "$(_resolve_domain_creds_dir)/${DOMAIN_CREDS_KEY_FILENAME}"
 }
 
-_create_and_encrypt_creds() {
-    # Args:  $1 = oim_password
-    #        $2 = bmc_username   (optional; keep existing if not provided)
-    #        $3 = bmc_password  (optional; keep existing if not provided)
-    #        $4 = os_root_password (optional; keep existing if not provided)
-    local _oim_pass="${1:-}"
-    local _bmc_user="${2:-}"
-    local _bmc_pass="${3:-}"
-    local _os_root_pass="${4:-}"
-
-    # If file already exists, preserve existing values for fields not being updated
-    if [ -f "$CREDS_FILE" ]; then
-        _decrypt_creds_temp
-        [ -z "$_oim_pass" ]  && _oim_pass=$(grep -E '^oim_password:' "$DECRYPTED_CREDS_TMP" | sed 's/^oim_password:[[:space:]]*//; s/[\"'\'']//g' || true)
-        [ -z "$_bmc_user" ]  && _bmc_user=$(grep -E '^bmc_username:' "$DECRYPTED_CREDS_TMP" | sed 's/^bmc_username:[[:space:]]*//; s/[\"'\'']//g' || true)
-        [ -z "$_bmc_pass" ]  && _bmc_pass=$(grep -E '^bmc_password:' "$DECRYPTED_CREDS_TMP" | sed 's/^bmc_password:[[:space:]]*//; s/[\"'\'']//g' || true)
-        [ -z "$_os_root_pass" ] && _os_root_pass=$(grep -E '^os_root_password:' "$DECRYPTED_CREDS_TMP" | sed 's/^os_root_password:[[:space:]]*//; s/[\"'\'']//g' || true)
-        rm -f "$DECRYPTED_CREDS_TMP"
-    fi
-
-    # Write plain-text creds file (all fields)
-    cat > "$CREDS_FILE" << CREDS_EOF
----
-# Utils Domain — test credentials
-# Auto-encrypted with Ansible Vault.  Do NOT commit this file.
-
-# SSH password for the remote OIM server (oim_server_ip in test_config.yml).
-# Leave empty to use key-based authentication.
-oim_password: "${_oim_pass}"
-
-# BMC credentials for install_os tests — synced to target credential files.
-# Required by the install_os playbook for iDRAC/BMC access.
-bmc_username: "${_bmc_user}"
-bmc_password: "${_bmc_pass}"
-
-# OS root password for install_os tests — synced to install_os_credentials.yml on the target.
-# Required by the install_os playbook for OS installation.
-os_root_password: "${_os_root_pass}"
-CREDS_EOF
-    chmod 600 "$CREDS_FILE"
-
-    _ensure_vault_key
-    _vault_encrypt
-}
-
+# ─────────────────────────────────────────────────────────────────────────────
 # Parse arguments
-SET_PASSWORD=false
+# ─────────────────────────────────────────────────────────────────────────────
+USE_VENV=false
+FORCE=false
+DEBUG=false
+PIP_QUIET="--quiet"
+SET_CREDS=false
+UPDATE_CREDS=false
+CREDS_FROM_STDIN=false
 SET_DOMAIN_CREDS=false
-PASSWORD_VALUE=""
-DOMAIN_CREDS_JSON=""
+UPDATE_DOMAIN_CREDS=false
+DOMAIN_CREDS_FROM_STDIN=false
+TEST_CONFIG="${SCRIPT_DIR}/test_config.yml"
 
+# shellcheck disable=SC2034
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --set-password)
-            SET_PASSWORD=true
-            shift
-            ;;
-        --update-password)
-            SET_PASSWORD=true
-            shift
-            ;;
+    case "$1" in
+        --venv)              USE_VENV=true; shift ;;
+        --force|-f)          FORCE=true; shift ;;
+        --debug)             DEBUG=true; PIP_QUIET=""; shift ;;
+        --set-creds)         SET_CREDS=true; shift ;;
+        --update-creds)      UPDATE_CREDS=true; shift ;;
+        --creds-stdin)       CREDS_FROM_STDIN=true; shift ;;
+        --set-domain-creds)    SET_DOMAIN_CREDS=true; shift ;;
+        --update-domain-creds) UPDATE_DOMAIN_CREDS=true; shift ;;
+        --domain-creds-stdin) DOMAIN_CREDS_FROM_STDIN=true; shift ;;
+        # Legacy options (deprecated but still supported for backward compatibility)
+        --set-password)      SET_CREDS=true; shift ;;
+        --update-password)   UPDATE_CREDS=true; shift ;;
         --password)
-            PASSWORD_VALUE="$2"
-            shift 2
+            fail "Secret-valued command-line flags are no longer supported. Pipe the password to --creds-stdin."
             ;;
-        --set-domain-creds)
-            SET_DOMAIN_CREDS=true
-            shift
+        --creds|--creds=*|--password=*)
+            fail "Secret-valued command-line flags are no longer supported. Pipe the password to --creds-stdin."
             ;;
-        --domain-creds)
-            DOMAIN_CREDS_JSON="$2"
-            shift 2
+        --domain-creds|--domain-creds=*)
+            fail "Secret-valued command-line flags are no longer supported. Pipe JSON to --domain-creds-stdin."
             ;;
+        --help|-h)
+            cat <<'HELPEOF'
+
+Utils Domain — Test Environment Setup
+
+Usage: ./setup_env.sh [OPTIONS]
+
+INSTALL MODES
+─────────────────────────────────────────────────────────────────
+  (no flag)       Baremetal mode (pip install --user).
+  --venv          Create .venv/ and install there.
+  --force, -f     Force-reinstall all packages from requirements.txt.
+                  With --venv, also recreate .venv/ from scratch.
+
+SSH CREDENTIALS (test_creds.yml)
+─────────────────────────────────────────────────────────────────
+  --set-creds     Interactive SSH password setup (2x confirmation).
+  --update-creds  Force-update existing SSH password (2x prompt).
+  --creds-stdin   Read an SSH password from standard input.
+
+DOMAIN CREDENTIALS (install_os_credentials.yml)
+─────────────────────────────────────────────────────────────────
+  Created on this machine at:
+    $UTILS_DATA_PATH/input/$OMNIA_PROJECT_NAME/, when set;
+    otherwise $OMNIA_DATA_PATH/utils/input/$OMNIA_PROJECT_NAME/.
+  Fields: bmc_username, bmc_password, os_root_password.
+  For remote execution, run this command on the target OIM server.
+
+  --set-domain-creds     Interactive prompt for all domain fields.
+  --update-domain-creds  Update an existing valid domain credential store.
+  --domain-creds-stdin   Read a JSON object from standard input. Example:
+    credential-json-provider | ./setup_env.sh --domain-creds-stdin
+
+OTHER OPTIONS
+─────────────────────────────────────────────────────────────────
+  --debug         Verbose pip output.
+  --help, -h      Show this help.
+
+EXAMPLES
+─────────────────────────────────────────────────────────────────
+  ./setup_env.sh --venv
+  ./setup_env.sh --venv --force
+  ./setup_env.sh --venv --set-creds
+  echo 'mypassword' | ./setup_env.sh --creds-stdin
+  echo '{"bmc_username":"admin","bmc_password":"pass","os_root_password":"root"}' | ./setup_env.sh --domain-creds-stdin
+
+HELPEOF
+            exit 0 ;;
         *)
-            log_error "Unknown option: $1"
-            exit 1
-            ;;
+            fail "Unknown option: $1. Use --help for supported arguments." ;;
     esac
 done
 
-# Create virtual environment
-if [[ ! -d "${VENV_DIR}" ]]; then
-    log_info "Creating virtual environment..."
-    python3 -m venv "${VENV_DIR}"
+# ─────────────────────────────────────────────────────────────────────────────
+# Validate domain environment (only when domain creds are being set)
+# ─────────────────────────────────────────────────────────────────────────────
+_validate_domain_environment() {
+    if [ -z "${OMNIA_PROJECT_NAME:-}" ]; then
+        fail "OMNIA_PROJECT_NAME is required. Source /etc/omnia/omnia.env."
+    fi
+    if [[ ! "$OMNIA_PROJECT_NAME" =~ ^[A-Za-z0-9._-]+$ ]]; then
+        fail "OMNIA_PROJECT_NAME contains unsupported characters."
+    fi
+    if [ "$OMNIA_PROJECT_NAME" = "." ] \
+        || [ "$OMNIA_PROJECT_NAME" = ".." ]; then
+        fail "OMNIA_PROJECT_NAME must name a project directory."
+    fi
+
+    local _domain_root=""
+    if [[ -v "$DOMAIN_DATA_PATH_ENV" ]]; then
+        _domain_root="${!DOMAIN_DATA_PATH_ENV}"
+    fi
+    if [ -z "$_domain_root" ]; then
+        if [ -z "${OMNIA_DATA_PATH:-}" ]; then
+            fail "$DOMAIN_DATA_PATH_ENV or OMNIA_DATA_PATH is required."
+        fi
+        _domain_root="${OMNIA_DATA_PATH%/}/${DOMAIN_NAME}"
+    fi
+    case "$_domain_root" in
+        /*) ;;
+        *) fail "Resolved domain data path must be absolute." ;;
+    esac
+    if [ "${_domain_root%/}" = "" ]; then
+        fail "Resolved domain data path must not be the filesystem root."
+    fi
+}
+
+# Validate only when domain creds are being set
+if [ "$SET_DOMAIN_CREDS" = true ] || [ "$UPDATE_DOMAIN_CREDS" = true ] \
+    || [ "$DOMAIN_CREDS_FROM_STDIN" = true ]; then
+    _validate_domain_environment
 fi
 
-# Activate virtual environment
-source "${VENV_DIR}/bin/activate"
+# ─────────────────────────────────────────────────────────────────────────────
+# Validate credential action combinations
+# ─────────────────────────────────────────────────────────────────────────────
+ssh_action_count=0
+for selected in "$CREDS_FROM_STDIN" "$SET_CREDS" "$UPDATE_CREDS"; do
+    if [ "$selected" = true ]; then
+        ssh_action_count=$((ssh_action_count + 1))
+    fi
+done
+if [ "$ssh_action_count" -gt 1 ]; then
+    fail "Use only one OIM SSH credential action per invocation."
+fi
 
-# Upgrade pip
-log_info "Upgrading pip..."
-pip install --upgrade pip --quiet
+domain_action_count=0
+for selected in \
+    "$DOMAIN_CREDS_FROM_STDIN" "$SET_DOMAIN_CREDS" "$UPDATE_DOMAIN_CREDS"; do
+    if [ "$selected" = true ]; then
+        domain_action_count=$((domain_action_count + 1))
+    fi
+done
+if [ "$domain_action_count" -gt 1 ]; then
+    fail "Use only one domain credential action per invocation."
+fi
+if [ "$CREDS_FROM_STDIN" = true ] \
+    && [ "$DOMAIN_CREDS_FROM_STDIN" = true ]; then
+    fail "Only one credential payload can be read from stdin per invocation."
+fi
 
-# Install requirements
-log_info "Installing requirements..."
-pip install -r "${SCRIPT_DIR}/requirements.txt" --quiet
+echo ""
+echo "================================================================="
+echo "  Utils Domain — Test Environment Setup"
+echo "================================================================="
+echo ""
 
-# Install omnia-auto plugin
-if [[ -f "${WHEEL_PATH}" ]]; then
-    log_info "Installing omnia-auto plugin..."
-    pip install "${WHEEL_PATH}" --force-reinstall --quiet
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 1: Check Python 3.12+
+# ─────────────────────────────────────────────────────────────────────────────
+_python_is_supported() {
+    "$1" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 12) else 1)' \
+        </dev/null 2>/dev/null
+}
+
+PYTHON_CMD=""
+for cmd in python3.12 python3 python; do
+    if command -v "$cmd" >/dev/null 2>&1 && _python_is_supported "$cmd"; then
+        PYTHON_CMD="$cmd"
+        break
+    fi
+done
+
+if [ -z "$PYTHON_CMD" ]; then
+    fail "Python 3.12+ is required but not found. Install: dnf install python3.12 python3.12-pip"
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 2: Determine install mode
+# ─────────────────────────────────────────────────────────────────────────────
+INSTALL_MODE="baremetal"
+PIP_USER_FLAG="--user"
+
+if [ "$USE_VENV" = true ]; then
+    INSTALL_MODE="venv"
+    PIP_USER_FLAG=""
+
+    if [ "$FORCE" = true ] && [ -d "$VENV_DIR" ]; then
+        info "Removing existing virtual environment (--force)"
+        rm -rf "$VENV_DIR"
+    fi
+
+    if [ -d "$VENV_DIR" ]; then
+        ok "Virtual environment already exists: .venv/"
+    else
+        info "Creating virtual environment: .venv/"
+        "$PYTHON_CMD" -m venv "$VENV_DIR" </dev/null
+        ok "Virtual environment created"
+    fi
+
+    # shellcheck disable=SC1091
+    source "${VENV_DIR}/bin/activate" </dev/null
+    PYTHON_CMD="${VENV_DIR}/bin/python"
+    ok "Activated .venv/"
+
+elif [ -n "${VIRTUAL_ENV:-}" ]; then
+    INSTALL_MODE="active-venv"
+    PIP_USER_FLAG=""
+    PYTHON_CMD="${VIRTUAL_ENV}/bin/python"
+    ok "Detected active virtual environment: ${VIRTUAL_ENV}"
+
 else
-    log_warn "omnia-auto wheel not found at ${WHEEL_PATH}"
-    log_warn "Build it with: cd ${PLUGINS_DIR} && pip wheel . -w dist/"
+    INSTALL_MODE="baremetal"
+    PIP_USER_FLAG="--user"
+    ok "Install mode: baremetal (system Python)"
 fi
 
-log_info "Environment setup complete!"
-log_info "Activate with: source ${VENV_DIR}/bin/activate"
+if ! _python_is_supported "$PYTHON_CMD"; then
+    fail "The selected Python interpreter must be version 3.12 or newer: ${PYTHON_CMD}"
+fi
 
-# Handle password setting
-if [[ "${SET_PASSWORD}" == "true" ]]; then
-    if [[ -n "${PASSWORD_VALUE}" ]]; then
-        # Non-interactive mode
-        _create_and_encrypt_creds "${PASSWORD_VALUE}"
-        log_info "SSH password updated in test_creds.yml"
-    else
-        # Interactive mode
-        read -sp "Enter SSH password for oim_server_ip: " password
-        echo
-        _create_and_encrypt_creds "${password}"
-        log_info "SSH password saved to test_creds.yml"
+ok "Python: $($PYTHON_CMD --version </dev/null 2>&1)"
+echo -e "  ${CYAN}Mode:${NC} ${INSTALL_MODE}"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 3: Install dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+_pip_install() {
+    PIP_NO_INPUT=1 "$PYTHON_CMD" -m pip install --no-input "$@" </dev/null
+}
+
+info "Upgrading pip"
+_pip_install --upgrade pip $PIP_QUIET $PIP_USER_FLAG
+
+if [ ! -f "$WHEEL_PATH" ]; then
+    fail "omnia-auto wheel not found: ${WHEEL_PATH}"
+fi
+
+info "Installing dependencies from requirements.txt"
+PIP_FORCE_ARGS=()
+if [ "$FORCE" = true ]; then
+    PIP_FORCE_ARGS=(--force-reinstall)
+    info "Force-reinstalling all requirements (--force)"
+fi
+
+_pip_install "${PIP_FORCE_ARGS[@]}" -r "$REQUIREMENTS" \
+    $PIP_QUIET $PIP_USER_FLAG
+
+_omnia_auto_has_required_features() {
+    "$PYTHON_CMD" -c '
+import inspect
+import omnia_auto
+params = inspect.signature(omnia_auto.sync_files).parameters
+if not {"auth_secret", "port"}.issubset(params) or not callable(omnia_auto.connection_params):
+    raise SystemExit(1)
+' </dev/null 2>/dev/null \
+        && "$PYTHON_CMD" -m omnia_auto write-field --help \
+            </dev/null 2>/dev/null \
+            | grep -q -- "--value-stdin" \
+        && "$PYTHON_CMD" -m omnia_auto write-fields --help \
+            </dev/null 2>/dev/null \
+            | grep -q -- "--fields-stdin"
+}
+
+_omnia_auto_matches_local_wheel() {
+    "$PYTHON_CMD" - "$WHEEL_PATH" 2>/dev/null <<'PY'
+import importlib.util
+from pathlib import Path, PurePosixPath
+import sys
+import zipfile
+
+wheel_path = Path(sys.argv[1])
+spec = importlib.util.find_spec("omnia_auto")
+if spec is None or not spec.submodule_search_locations:
+    raise SystemExit(1)
+package_root = Path(next(iter(spec.submodule_search_locations))).resolve()
+with zipfile.ZipFile(wheel_path) as archive:
+    members = [
+        name for name in archive.namelist()
+        if name.startswith("omnia_auto/") and not name.endswith("/")
+    ]
+    if not members:
+        raise SystemExit(1)
+    for name in members:
+        relative_path = PurePosixPath(name).relative_to("omnia_auto")
+        if ".." in relative_path.parts:
+            raise SystemExit(1)
+        installed_path = package_root.joinpath(*relative_path.parts)
+        if (
+            not installed_path.is_file()
+            or installed_path.read_bytes() != archive.read(name)
+        ):
+            raise SystemExit(1)
+PY
+}
+
+
+if ! _omnia_auto_has_required_features \
+    || ! _omnia_auto_matches_local_wheel; then
+    info "Refreshing the same-version local omnia-auto wheel"
+    _pip_install --force-reinstall --no-deps \
+        "$WHEEL_PATH" $PIP_QUIET $PIP_USER_FLAG
+fi
+
+if ! _omnia_auto_has_required_features \
+    || ! _omnia_auto_matches_local_wheel; then
+    fail "Installed omnia-auto does not match the required local wheel API"
+fi
+
+ok "All dependencies installed"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 4: Credential helpers (delegate to omnia_auto credential CLI)
+# ─────────────────────────────────────────────────────────────────────────────
+
+_credential_cli() {
+    "$PYTHON_CMD" -m omnia_auto "$@"
+}
+
+_show_oim_server_ip() {
+    if [ ! -f "$TEST_CONFIG" ]; then
+        warn "test_config.yml not found — set oim_server_ip for remote mode."
+        return
     fi
+    local oim_ip
+    oim_ip=$(grep -E '^oim_server_ip:' "$TEST_CONFIG" 2>/dev/null \
+        | sed 's/^oim_server_ip:[[:space:]]*//; s/["'\''[:space:]]//g' || true)
+    if [ -n "$oim_ip" ]; then
+        ok "Target server: ${oim_ip}"
+    else
+        warn "oim_server_ip not set — credentials saved locally for later use."
+    fi
+}
+
+_prompt_and_write_ssh_creds() {
+    _credential_cli prompt-and-confirm --message "SSH Password" </dev/tty \
+        | _credential_cli write-field \
+        --creds-path "$CREDS_FILE" --key-path "$CREDS_KEY" \
+        --field oim_password --value-stdin >/dev/null
+    ok "SSH credentials saved: test_creds.yml (encrypted)"
+}
+
+_write_ssh_creds_stdin() {
+    _credential_cli write-field \
+        --creds-path "$CREDS_FILE" --key-path "$CREDS_KEY" \
+        --field oim_password --value-stdin >/dev/null
+    ok "SSH credentials saved: test_creds.yml (encrypted)"
+}
+
+# Write domain creds to install_os_credentials.yml (at env-var path)
+_write_domain_creds_stdin() {
+    local _path; _path=$(_domain_creds_path)
+    local _key;  _key=$(_domain_creds_key_path)
+    local _dir;  _dir=$(_resolve_domain_creds_dir)
+
+    mkdir -p "$_dir"
+    _credential_cli write-fields \
+        --creds-path "$_path" --key-path "$_key" \
+        --fields-stdin --spec "$DOMAIN_CRED_SPEC" \
+        --require-complete >/dev/null
+    ok "Domain credentials saved: $_path (encrypted)"
+}
+
+_prompt_and_write_domain_creds() {
+    local _path; _path=$(_domain_creds_path)
+    local _key;  _key=$(_domain_creds_key_path)
+    local _dir;  _dir=$(_resolve_domain_creds_dir)
+
+    mkdir -p "$_dir"
+    _credential_cli prompt-fields \
+        --creds-path "$_path" \
+        --key-path "$_key" \
+        --spec "$DOMAIN_CRED_SPEC" --require-complete </dev/tty
+    ok "Domain credentials saved: $_path (encrypted)"
+}
+
+# Read a field from the domain creds file
+_read_domain_field() {
+    local _field="$1"
+    local _path; _path=$(_domain_creds_path)
+    local _key;  _key=$(_domain_creds_key_path)
+    _credential_cli read-field --creds-path "$_path" --key-path "$_key" \
+        --field "$_field" 2>/dev/null || true
+}
+
+_credential_fields_are_set() {
+    local _path="$1"
+    local _key="$2"
+    shift 2
+    if ! _credential_cli is-encrypted \
+        --creds-path "$_path" </dev/null >/dev/null 2>&1; then
+        return 1
+    fi
+    local _field
+    for _field in "$@"; do
+        if ! _credential_cli read-field \
+            --creds-path "$_path" --key-path "$_key" \
+            --field "$_field" 2>/dev/null \
+            | grep -q '[^[:space:]]'; then
+            return 1
+        fi
+    done
+    return 0
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 5: Handle SSH credentials
+# ─────────────────────────────────────────────────────────────────────────────
+if [ "$SET_CREDS" = true ]; then
+    if [ -f "$CREDS_FILE" ] \
+        && _credential_fields_are_set "$CREDS_FILE" "$CREDS_KEY" oim_password; then
+        warn "SSH credentials already exist. Use --update-creds to replace."
+    else
+        _prompt_and_write_ssh_creds
+        _show_oim_server_ip
+    fi
+elif [ "$UPDATE_CREDS" = true ]; then
+    _prompt_and_write_ssh_creds
+    _show_oim_server_ip
+elif [ "$CREDS_FROM_STDIN" = true ]; then
+    _write_ssh_creds_stdin
+    _show_oim_server_ip
 fi
 
-# Handle domain credentials
-if [[ "${SET_DOMAIN_CREDS}" == "true" ]]; then
-    if [[ -n "${DOMAIN_CREDS_JSON}" ]]; then
-        # Non-interactive mode (JSON input)
-        _bmc_user=$(echo "$DOMAIN_CREDS_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('bmc_username',''))" 2>/dev/null || true)
-        _bmc_pass=$(echo "$DOMAIN_CREDS_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('bmc_password',''))" 2>/dev/null || true)
-        _os_root_pass=$(echo "$DOMAIN_CREDS_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('os_root_password',''))" 2>/dev/null || true)
-        _create_and_encrypt_creds "" "$_bmc_user" "$_bmc_pass" "$_os_root_pass"
-        log_info "Domain credentials updated in test_creds.yml"
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 6: Handle domain credentials
+# ─────────────────────────────────────────────────────────────────────────────
+if [ "$SET_DOMAIN_CREDS" = true ]; then
+    local_path=$(_domain_creds_path)
+    local_key=$(_domain_creds_key_path)
+    if [ -f "$local_path" ] \
+        && _credential_fields_are_set "$local_path" "$local_key" \
+            bmc_username bmc_password os_root_password; then
+        warn "Domain credentials already exist. Use --update-domain-creds to replace."
     else
-        # Interactive mode
-        read -p "Enter BMC username: " bmc_user
-        read -sp "Enter BMC password: " bmc_pass
-        echo
-        read -sp "Enter OS root password: " os_root_pass
-        echo
-        _create_and_encrypt_creds "" "$bmc_user" "$bmc_pass" "$os_root_pass"
-        log_info "Domain credentials saved to test_creds.yml"
+        _prompt_and_write_domain_creds
     fi
+elif [ "$UPDATE_DOMAIN_CREDS" = true ]; then
+    _prompt_and_write_domain_creds
+elif [ "$DOMAIN_CREDS_FROM_STDIN" = true ]; then
+    _write_domain_creds_stdin
 fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 7: Load environment and display summary
+# ─────────────────────────────────────────────────────────────────────────────
+echo ""
+ok "Setup complete!"
+echo ""
 
 # Source omnia.env if available (system-wide or local)
 if [[ -f /etc/profile.d/omnia-env.sh ]]; then
+    # shellcheck disable=SC1091
     source /etc/profile.d/omnia-env.sh
-    log_info "Loaded environment from /etc/profile.d/omnia-env.sh"
+    info "Loaded environment from /etc/profile.d/omnia-env.sh"
 elif [[ -f /etc/omnia/omnia.env ]]; then
     set -a
+    # shellcheck disable=SC1091
     source /etc/omnia/omnia.env
     set +a
-    log_info "Loaded environment from /etc/omnia/omnia.env"
+    info "Loaded environment from /etc/omnia/omnia.env"
 fi
-
-log_info "Setup complete!"
-log_info ""
 
 # Check if environment variables are set
 if [[ -n "${OMNIA_DATA_PATH:-}" ]] && [[ -n "${OMNIA_PROJECT_NAME:-}" ]]; then
-    log_info "Environment variables loaded:"
-    log_info "  OMNIA_DATA_PATH=${OMNIA_DATA_PATH}"
-    log_info "  OMNIA_PROJECT_NAME=${OMNIA_PROJECT_NAME}"
-    log_info ""
-    log_info "Ready to run tests:"
-    log_info "  ./run_validation.sh collect test"
+    info "Environment variables loaded:"
+    info "  OMNIA_DATA_PATH=${OMNIA_DATA_PATH}"
+    info "  OMNIA_PROJECT_NAME=${OMNIA_PROJECT_NAME}"
+    echo ""
+    info "Ready to run tests:"
+    if [ "$USE_VENV" = true ]; then
+        info "  source .venv/bin/activate"
+    fi
+    info "  ./run_validation.sh collect test"
 else
-    log_warn "Environment variables not set. Before running tests:"
-    log_info "  export OMNIA_DATA_PATH=/opt/omnia"
-    log_info "  export OMNIA_PROJECT_NAME=project_default"
-    log_info ""
-    log_info "Or run tests with:"
-    log_info "  OMNIA_DATA_PATH=/opt/omnia OMNIA_PROJECT_NAME=project_default ./run_validation.sh collect test"
+    warn "Environment variables not set. Before running tests:"
+    info "  export OMNIA_DATA_PATH=/opt/omnia"
+    info "  export OMNIA_PROJECT_NAME=project_default"
+    echo ""
+    info "Or source the environment file:"
+    info "  source /etc/omnia/omnia.env"
+fi
+
+if [ "$USE_VENV" = true ]; then
+    echo ""
+    info "Activate the virtual environment with:"
+    info "  source ${VENV_DIR}/bin/activate"
 fi
