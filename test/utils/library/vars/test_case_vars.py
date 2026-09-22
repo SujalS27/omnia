@@ -223,6 +223,23 @@ TEST_CASES = {
         "id": "UTILS_FVT_INSTALL_OS_V008",
         "title": "Verify kickstart.ks file generated",
     },
+    # Post-deployment verification tests
+    "install_os_node_reachable": {
+        "id": "UTILS_FVT_INSTALL_OS_V009",
+        "title": "Verify installed node is reachable (ping)",
+    },
+    "install_os_node_ssh_accessible": {
+        "id": "UTILS_FVT_INSTALL_OS_V010",
+        "title": "Verify installed node is SSH accessible",
+    },
+    "install_os_node_hostname_correct": {
+        "id": "UTILS_FVT_INSTALL_OS_V011",
+        "title": "Verify installed node hostname matches config",
+    },
+    "install_os_node_ip_correct": {
+        "id": "UTILS_FVT_INSTALL_OS_V012",
+        "title": "Verify installed node IP matches config",
+    },
 
     # ══════════════════════════════════════════════════════════════════════════
     # CLEANUP_LOGS SCENARIO

@@ -68,7 +68,7 @@ CREDS_KEY="${SCRIPT_DIR}/.test_creds.key"
 
 # ── Domain credentials (at env-var path) ──
 DOMAIN_CREDS_FILENAME="install_os_credentials.yml"
-DOMAIN_CREDS_KEY_FILENAME=".install_os_credentials.key"
+DOMAIN_CREDS_KEY_FILENAME=".install_os_credentials_key"
 DOMAIN_NAME="utils"
 DOMAIN_DATA_PATH_ENV="UTILS_DATA_PATH"
 

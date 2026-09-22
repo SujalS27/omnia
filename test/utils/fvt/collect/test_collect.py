@@ -315,7 +315,9 @@ def test_collect_functional_groups_valid(host):
 
 
 # =============================================================================
-# OUTPUT VERIFICATION
+# OUTPUT VERIFICATION (post-deployment verification)
+# These tests verify outputs created by the collect playbook.
+# Run with 'verify' command after manual or automated deployment.
 # =============================================================================
 
 @pytest.mark.functional
@@ -373,7 +375,7 @@ def test_collect_metadata_exists(host):
         metadata_path = result.stdout.strip()
     else:
         tl.failed(f"No metadata.json found in {output_path}")
-        pytest.skip(f"No metadata.json found in {output_path}")
+        pytest.fail(f"No metadata.json found in {output_path}")
 
     result = check_file_exists(host, metadata_path)
 
@@ -402,7 +404,7 @@ def test_collect_metadata_valid(host):
         metadata_path = result.stdout.strip()
     else:
         tl.failed(f"No metadata.json found in {output_path}")
-        pytest.skip(f"No metadata.json found in {output_path}")
+        pytest.fail(f"No metadata.json found in {output_path}")
 
     result = validate_metadata_file(host, metadata_path)
 
@@ -431,7 +433,7 @@ def test_collect_metadata_sha256(host):
         metadata_path = result.stdout.strip()
     else:
         tl.failed(f"No metadata.json found in {output_path}")
-        pytest.skip(f"No metadata.json found in {output_path}")
+        pytest.fail(f"No metadata.json found in {output_path}")
 
     result = validate_metadata_file(host, metadata_path)
 
@@ -455,8 +457,8 @@ def test_collect_bundle_contents(host):
     bundle_result = find_log_bundle(host, output_path)
 
     if not bundle_result["success"]:
-        tl.skipped("No log bundle found, skipping content verification")
-        pytest.skip("No log bundle found")
+        tl.failed("No log bundle found - deployment may not have run")
+        pytest.fail("No log bundle found - deployment may not have run")
 
     # Expected directories in the bundle (updated to match actual structure)
     expected_dirs = ["k8s", "slurm"]
@@ -483,8 +485,8 @@ def test_collect_bundle_log_files_content(host):
     bundle_result = find_log_bundle(host, output_path)
 
     if not bundle_result["success"]:
-        tl.skipped("No log bundle found, skipping log file verification")
-        pytest.skip("No log bundle found")
+        tl.failed("No log bundle found - deployment may not have run")
+        pytest.fail("No log bundle found - deployment may not have run")
 
     result = validate_bundle_log_files(host, bundle_result["bundle_path"])
 

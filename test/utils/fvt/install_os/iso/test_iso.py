@@ -250,3 +250,187 @@ def test_install_os_kickstart_generated(host):
     else:
         tl.skipped("kickstart.ks not found in output directory (may be written to NFS path)")
         pytest.skip("kickstart.ks not found")
+
+
+# =============================================================================
+# POST-DEPLOYMENT VERIFICATION (order 60-69)
+# These tests verify the installed node is reachable and configured correctly.
+# They require target_admin_ip and target_hostname to be configured.
+# =============================================================================
+
+def _get_install_os_config(host):
+    """Helper to load install_os config and extract target node details."""
+    input_path = get_utils_input_path(host)
+    config_path = f"{input_path}/{INSTALL_OS_CONFIG_FILE}"
+
+    result = validate_install_os_config(host, config_path)
+    if not result["success"]:
+        return {"success": False, "error": result["error"]}
+
+    config = result.get("config", {})
+    return {
+        "success": True,
+        "target_admin_ip": config.get("target_admin_ip", ""),
+        "target_hostname": config.get("target_hostname", ""),
+        "target_bmc_ip": config.get("target_bmc_ip", ""),
+    }
+
+
+@pytest.mark.sanity
+@pytest.mark.order(60)
+def test_install_os_node_reachable(host):
+    """Verify installed node is reachable via ping.
+
+    This is a post-deployment verification test. It checks that the node
+    configured in install_os_config.yml is reachable after OS installation.
+    """
+    tc = TC["install_os_node_reachable"]
+    tl = TestLogger(tc["title"], tc["id"])
+
+    config = _get_install_os_config(host)
+    if not config["success"]:
+        tl.failed(f"Cannot load install_os config: {config['error']}")
+        pytest.fail(f"Cannot load install_os config: {config['error']}")
+
+    target_ip = config["target_admin_ip"]
+    if not target_ip:
+        tl.failed("target_admin_ip not configured in install_os_config.yml - cannot verify node")
+        pytest.fail("target_admin_ip not configured in install_os_config.yml")
+
+    # Ping the target node
+    ping_result = host.run(f"ping -c 3 -W 5 {target_ip}")
+
+    if ping_result.rc == 0:
+        tl.passed(f"Node {target_ip} is reachable via ping")
+    else:
+        tl.failed(f"Node {target_ip} is not reachable via ping")
+
+    assert ping_result.rc == 0, f"Node {target_ip} is not reachable via ping"
+
+
+@pytest.mark.sanity
+@pytest.mark.order(61)
+def test_install_os_node_ssh_accessible(host):
+    """Verify installed node is accessible via SSH.
+
+    This test verifies that SSH is running on the installed node and
+    we can connect to it (using the SSH key configured during install).
+    """
+    tc = TC["install_os_node_ssh_accessible"]
+    tl = TestLogger(tc["title"], tc["id"])
+
+    config = _get_install_os_config(host)
+    if not config["success"]:
+        tl.failed(f"Cannot load install_os config: {config['error']}")
+        pytest.fail(f"Cannot load install_os config: {config['error']}")
+
+    target_ip = config["target_admin_ip"]
+    if not target_ip:
+        tl.failed("target_admin_ip not configured in install_os_config.yml - cannot verify SSH")
+        pytest.fail("target_admin_ip not configured in install_os_config.yml")
+
+    # Try SSH connection with timeout
+    ssh_result = host.run(
+        f"ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no "
+        f"root@{target_ip} 'echo SSH_OK' 2>/dev/null"
+    )
+
+    if ssh_result.rc == 0 and "SSH_OK" in ssh_result.stdout:
+        tl.passed(f"SSH connection to {target_ip} successful")
+    else:
+        tl.failed(f"SSH connection to {target_ip} failed")
+
+    assert ssh_result.rc == 0 and "SSH_OK" in ssh_result.stdout, \
+        f"SSH connection to {target_ip} failed (rc={ssh_result.rc})"
+
+
+@pytest.mark.functional
+@pytest.mark.order(62)
+def test_install_os_node_hostname_correct(host):
+    """Verify installed node hostname matches configuration.
+
+    This test SSHs to the installed node and verifies that the hostname
+    matches what was configured in install_os_config.yml.
+    """
+    tc = TC["install_os_node_hostname_correct"]
+    tl = TestLogger(tc["title"], tc["id"])
+
+    config = _get_install_os_config(host)
+    if not config["success"]:
+        tl.failed(f"Cannot load install_os config: {config['error']}")
+        pytest.fail(f"Cannot load install_os config: {config['error']}")
+
+    target_ip = config["target_admin_ip"]
+    expected_hostname = config["target_hostname"]
+
+    if not target_ip:
+        tl.failed("target_admin_ip not configured in install_os_config.yml")
+        pytest.fail("target_admin_ip not configured in install_os_config.yml")
+
+    if not expected_hostname:
+        tl.failed("target_hostname not configured in install_os_config.yml")
+        pytest.fail("target_hostname not configured in install_os_config.yml")
+
+    # Get actual hostname from the node
+    ssh_result = host.run(
+        f"ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no "
+        f"root@{target_ip} 'hostname' 2>/dev/null"
+    )
+
+    if ssh_result.rc != 0:
+        tl.failed(f"Cannot SSH to {target_ip} to verify hostname")
+        pytest.fail(f"Cannot SSH to {target_ip} to verify hostname")
+
+    actual_hostname = ssh_result.stdout.strip()
+
+    # Compare hostnames (may be short or FQDN)
+    if actual_hostname == expected_hostname or actual_hostname.startswith(f"{expected_hostname}."):
+        tl.passed(f"Hostname matches: {actual_hostname}")
+    else:
+        tl.failed(f"Hostname mismatch: expected '{expected_hostname}', got '{actual_hostname}'")
+
+    assert actual_hostname == expected_hostname or actual_hostname.startswith(f"{expected_hostname}."), \
+        f"Hostname mismatch: expected '{expected_hostname}', got '{actual_hostname}'"
+
+
+@pytest.mark.functional
+@pytest.mark.order(63)
+def test_install_os_node_ip_correct(host):
+    """Verify installed node IP address matches configuration.
+
+    This test SSHs to the installed node and verifies that the IP address
+    matches what was configured in install_os_config.yml.
+    """
+    tc = TC["install_os_node_ip_correct"]
+    tl = TestLogger(tc["title"], tc["id"])
+
+    config = _get_install_os_config(host)
+    if not config["success"]:
+        tl.failed(f"Cannot load install_os config: {config['error']}")
+        pytest.fail(f"Cannot load install_os config: {config['error']}")
+
+    target_ip = config["target_admin_ip"]
+
+    if not target_ip:
+        tl.failed("target_admin_ip not configured in install_os_config.yml")
+        pytest.fail("target_admin_ip not configured in install_os_config.yml")
+
+    # Get actual IP addresses from the node
+    ssh_result = host.run(
+        f"ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no "
+        f"root@{target_ip} 'ip -4 addr show | grep inet | awk \"{{print \\$2}}\" | cut -d/ -f1' 2>/dev/null"
+    )
+
+    if ssh_result.rc != 0:
+        tl.failed(f"Cannot SSH to {target_ip} to verify IP")
+        pytest.fail(f"Cannot SSH to {target_ip} to verify IP")
+
+    actual_ips = ssh_result.stdout.strip().split('\n')
+
+    if target_ip in actual_ips:
+        tl.passed(f"IP address {target_ip} found on node")
+    else:
+        tl.failed(f"IP mismatch: expected '{target_ip}' in node IPs, got {actual_ips}")
+
+    assert target_ip in actual_ips, \
+        f"IP mismatch: expected '{target_ip}' in node IPs, got {actual_ips}"

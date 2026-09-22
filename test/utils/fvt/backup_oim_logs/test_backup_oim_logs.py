@@ -255,7 +255,9 @@ def test_backup_oim_logs_project_name_loaded(host):
 
 
 # =============================================================================
-# OUTPUT VERIFICATION
+# OUTPUT VERIFICATION (post-deployment verification)
+# These tests verify outputs created by the backup_oim_logs playbook.
+# Run with 'verify' command after manual or automated deployment.
 # =============================================================================
 
 @pytest.mark.functional
@@ -310,7 +312,7 @@ def test_backup_oim_logs_metadata_exists(host):
 
     if result.rc != 0 or not result.stdout.strip():
         tl.failed(f"No metadata.json found in {output_path}")
-        pytest.skip(f"No metadata.json found in {output_path}")
+        pytest.fail(f"No metadata.json found in {output_path}")
 
     metadata_path = result.stdout.strip()
     file_result = check_file_exists(host, metadata_path)
@@ -335,8 +337,8 @@ def test_backup_oim_logs_metadata_valid(host):
     cmd = f"find {output_path} -name 'metadata.json' 2>/dev/null | head -1"
     find_result = host.run(cmd)
     if find_result.rc != 0 or not find_result.stdout.strip():
-        tl.skipped("No metadata.json found")
-        pytest.skip("No metadata.json found")
+        tl.failed("No metadata.json found - deployment may not have run")
+        pytest.fail("No metadata.json found - deployment may not have run")
 
     result = validate_backup_metadata_file(host, find_result.stdout.strip())
     if result["success"]:
@@ -359,8 +361,8 @@ def test_backup_oim_logs_metadata_sha256(host):
     cmd = f"find {output_path} -name 'metadata.json' 2>/dev/null | head -1"
     find_result = host.run(cmd)
     if find_result.rc != 0 or not find_result.stdout.strip():
-        tl.skipped("No metadata.json found")
-        pytest.skip("No metadata.json found")
+        tl.failed("No metadata.json found - deployment may not have run")
+        pytest.fail("No metadata.json found - deployment may not have run")
 
     result = validate_backup_metadata_file(host, find_result.stdout.strip())
     if result["has_sha256"]:
@@ -382,8 +384,8 @@ def test_backup_oim_logs_archive_contents(host):
     output_path = get_backup_oim_logs_output_path(host)
     bundle_result = find_log_bundle(host, output_path)
     if not bundle_result["success"]:
-        tl.skipped("No backup archive found, skipping content verification")
-        pytest.skip("No backup archive found")
+        tl.failed("No backup archive found - deployment may not have run")
+        pytest.fail("No backup archive found - deployment may not have run")
 
     result = validate_tar_contents(host, bundle_result["bundle_path"], BACKUP_ALL_DOMAINS)
 
@@ -519,8 +521,8 @@ def test_backup_oim_logs_config_file_domains(host):
     output_path = get_backup_oim_logs_output_path(host)
     bundle_result = find_log_bundle(host, output_path)
     if not bundle_result["success"]:
-        tl.skipped("No backup archive found, skipping content verification")
-        pytest.skip("No backup archive found")
+        tl.failed("No backup archive found - deployment may not have run")
+        pytest.fail("No backup archive found - deployment may not have run")
 
     tar_result = validate_tar_contents(host, bundle_result["bundle_path"], selected_domains)
     if tar_result["found_dirs"]:
