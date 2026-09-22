@@ -259,17 +259,24 @@ fi
 
 # Add marker filter based on command
 if [[ "${COMMAND}" == "deploy" ]]; then
-    PYTEST_ARGS+=("--marker" "deploy")
-elif [[ "${COMMAND}" == "verify" ]]; then
-    # Verify = all non-deploy tests
+    # Deploy = only deploy tests
     if [[ -n "${MARKER}" ]]; then
-        PYTEST_ARGS+=("--marker" "${MARKER}")
+        PYTEST_ARGS+=("-m" "deploy and ${MARKER}")
+    else
+        PYTEST_ARGS+=("-m" "deploy")
     fi
-fi
-
-# Add custom marker if specified
-if [[ -n "${MARKER}" ]] && [[ "${COMMAND}" != "deploy" ]]; then
-    PYTEST_ARGS+=("--marker" "${MARKER}")
+elif [[ "${COMMAND}" == "verify" ]]; then
+    # Verify = all non-deploy tests (exclude deploy marker)
+    if [[ -n "${MARKER}" ]]; then
+        PYTEST_ARGS+=("-m" "not deploy and ${MARKER}")
+    else
+        PYTEST_ARGS+=("-m" "not deploy")
+    fi
+elif [[ "${COMMAND}" == "test" ]]; then
+    # Test = all tests (deploy + verify)
+    if [[ -n "${MARKER}" ]]; then
+        PYTEST_ARGS+=("-m" "${MARKER}")
+    fi
 fi
 
 log_header
