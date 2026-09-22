@@ -115,8 +115,11 @@ def pytest_configure(config):
         "pxe": "PXE boot tests",
         "install_os": "OS installation tests",
         "backup_oim_logs": "OIM log backup tests",
-        "cleanup_backup_oim_logs": "OIM log backup cleanup tests",
         "slurm_config_util": "Slurm config backup/cleanup/rollback tests",
+        "cleanup": "Combined cleanup tests",
+        "cleanup_logs": "Log cleanup tests",
+        "cleanup_install_os": "Install OS cleanup tests",
+        "cleanup_backup_oim_logs": "OIM log backup cleanup tests",
         "cleanup_slurm_config_backups": "Slurm config backup cleanup tests",
         "destructive": "Deletes live state (e.g. the active Slurm config share). "
                         "Opt-in only: excluded unless explicitly selected via --marker destructive",
