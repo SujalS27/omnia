@@ -191,6 +191,14 @@
     - cleanup
     - cleanup_slurm_config_backups
 
+- name: Remove utils status file (main cleanup only)
+  ansible.builtin.file:
+    path: "{{ lookup('env', 'OMNIA_DATA_PATH') | default('/opt/omnia', true) }}/utils/output/{{ lookup('env', 'OMNIA_PROJECT_NAME') | default('project_default', true) }}/utils_status.yml"
+    state: absent
+  tags:
+    - never
+    - cleanup
+
 # =========================================================================
 # FLOW: upgrade - Upgrade flow placeholder (opt-in only)
 # =========================================================================

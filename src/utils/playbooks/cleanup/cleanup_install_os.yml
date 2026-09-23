@@ -113,11 +113,6 @@
             else 'Not present' }}
           - "=========================================="
 
-    - name: Remove utils status file
-      ansible.builtin.file:
-        path: "{{ omnia_data_path }}/utils/output/{{ project_name }}/utils_status.yml"
-        state: absent
-
     - name: Remove install_os status file
       ansible.builtin.file:
         path: "{{ omnia_data_path }}/utils/output/{{ project_name }}/install_os_status.yml"

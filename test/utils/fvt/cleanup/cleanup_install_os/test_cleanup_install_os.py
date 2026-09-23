@@ -33,7 +33,6 @@ from library.functions import (
     check_install_os_temp_dir_removed,
     check_install_os_nfs_unmounted,
     check_install_os_credentials_removed,
-    check_utils_status_file_removed,
     check_install_os_status_file_removed,
 )
 from library.vars import (
@@ -184,33 +183,6 @@ def test_cleanup_install_os_credentials_removed(host):
 @pytest.mark.sanity
 @pytest.mark.cleanup_install_os
 @pytest.mark.order(4)
-def test_cleanup_install_os_status_file_removed(host):
-    """Verify utils_status.yml file is removed after cleanup_install_os."""
-    tc = TC["cleanup_status_file_removed"]
-    tl = TestLogger(tc["title"], tc["id"])
-
-    output_path = get_utils_output_path(host)
-    result = check_utils_status_file_removed(host, output_path)
-
-    tl.info("Status file cleanup status:")
-    tl.info(f"  Status file path: {result['path']}")
-    tl.info(f"  Status file removed: {'Yes' if result['success'] else 'No'}")
-
-    if result["success"]:
-        tl.passed("Utils status file removed")
-    else:
-        tl.failed(f"Status file still exists at {result['path']}")
-
-    assert result["success"], (
-        f"Utils status file not removed: "
-        f"path={result['path']}, "
-        f"exists={result['exists']}"
-    )
-
-
-@pytest.mark.sanity
-@pytest.mark.cleanup_install_os
-@pytest.mark.order(5)
 def test_cleanup_install_os_specific_status_file_removed(host):
     """Verify install_os_status.yml file is removed after cleanup_install_os."""
     tc = TC["cleanup_install_os_status_file_removed"]

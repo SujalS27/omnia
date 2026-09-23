@@ -178,8 +178,8 @@ def test_slurm_config_backup_run_dir_created(host):
     result = find_latest_backup_run_dir(host, output_path)
 
     if not result["success"]:
-        tl.skipped(result["error"])
-        pytest.skip(result["error"])
+        tl.failed(result["error"])
+        pytest.fail(result["error"])
 
     tl.passed(f"Backup run directory created: {result['run_dir']}")
     assert result["success"], result["error"]
@@ -196,8 +196,8 @@ def test_slurm_config_backup_metadata_exists(host):
     output_path = get_slurm_config_util_output_path(host)
     run_dir_result = find_latest_backup_run_dir(host, output_path)
     if not run_dir_result["success"]:
-        tl.skipped(run_dir_result["error"])
-        pytest.skip(run_dir_result["error"])
+        tl.failed(run_dir_result["error"])
+        pytest.fail(run_dir_result["error"])
 
     metadata_path = f"{run_dir_result['run_dir']}/metadata.json"
     result = check_file_exists(host, metadata_path)
@@ -221,8 +221,8 @@ def test_slurm_config_backup_metadata_valid(host):
     output_path = get_slurm_config_util_output_path(host)
     run_dir_result = find_latest_backup_run_dir(host, output_path)
     if not run_dir_result["success"]:
-        tl.skipped(run_dir_result["error"])
-        pytest.skip(run_dir_result["error"])
+        tl.failed(run_dir_result["error"])
+        pytest.fail(run_dir_result["error"])
 
     metadata_path = f"{run_dir_result['run_dir']}/metadata.json"
     result = validate_slurm_backup_metadata_file(host, metadata_path)
@@ -249,14 +249,14 @@ def test_slurm_config_backup_directories_present(host):
     output_path = get_slurm_config_util_output_path(host)
     run_dir_result = find_latest_backup_run_dir(host, output_path)
     if not run_dir_result["success"]:
-        tl.skipped(run_dir_result["error"])
-        pytest.skip(run_dir_result["error"])
+        tl.failed(run_dir_result["error"])
+        pytest.fail(run_dir_result["error"])
 
     metadata_path = f"{run_dir_result['run_dir']}/metadata.json"
     meta_result = validate_slurm_backup_metadata_file(host, metadata_path)
     if not meta_result["success"]:
-        tl.skipped("Could not read controller_hostname from metadata.json")
-        pytest.skip("Could not read controller_hostname from metadata.json")
+        tl.failed("Could not read controller_hostname from metadata.json")
+        pytest.fail("Could not read controller_hostname from metadata.json")
 
     controller_hostname = meta_result["data"].get("controller_hostname", "")
     result = check_backup_directories_present(host, run_dir_result["run_dir"], controller_hostname)
