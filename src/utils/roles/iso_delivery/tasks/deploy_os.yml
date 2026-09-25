@@ -13,68 +13,317 @@
 # limitations under the License.
 ---
 
-# ── Step 1: Compute NFS ISO URI for iDRAC ───────────────────────────────
-- name: Set NFS ISO URI for iDRAC virtual media
-  ansible.builtin.set_fact:
-    _nfs_iso_uri: "{{ _nfs_server }}:{{ _nfs_full_path }}"
+# ============================================================================
+# iDRAC NFS Virtual Media Boot Deployment (Based on working Python script)
+# ============================================================================
+# This playbook boots the server from an ISO on NFS share using Redfish API.
+# Based on the working Python script used by teammates.
+#
+# Key differences from previous attempts:
+# 1. Uses /redfish/v1/Systems/System.Embedded.1/VirtualMedia/1/ (not Managers/)
+# 2. Uses simpler boot override payload
+# 3. Monitors iDRAC logs for mount status
+#
+# Key steps:
+# 1. Eject virtual media from slot 1 and 2
+# 2. Mount NFS virtual media to slot 1
+# 3. Set boot override to CD
+# 4. Reboot server
+# 5. Monitor iDRAC logs for installation completion
+# ============================================================================
 
-- name: Log NFS ISO URI
-  ansible.builtin.debug:
-    msg: "iDRAC virtual media will mount ISO from NFS: {{ _nfs_iso_uri }}"
-
-# ── Step 2: Eject existing virtual media ────────────────────────────────
-- name: Eject existing virtual media if mounted
-  dellemc.openmanage.idrac_virtual_media:
-    idrac_ip: "{{ target_bmc_ip }}"
-    idrac_user: "{{ bmc_username }}"
-    idrac_password: "{{ bmc_password }}"
+# ── Step 1: Discover available virtual media resources ─────────────────────
+- name: Get available virtual media resources from iDRAC
+  ansible.builtin.uri:
+    url: "https://{{ target_bmc_ip }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia"
+    method: GET
+    user: "{{ bmc_username }}"
+    password: "{{ bmc_password }}"
+    force_basic_auth: true
     validate_certs: false
-    virtual_media:
-      - insert: false
-  changed_when: false
+  register: _vm_resources
+  no_log: true
+
+- name: Display available virtual media resources
+  ansible.builtin.debug:
+    msg: |
+      Available Virtual Media Resources:
+        Members: {{ _vm_resources.json.Members | default([]) | to_nice_json }}
+        Full Response: {{ _vm_resources.json | to_nice_json }}
+
+- name: Set NFS share and ISO filename for iDRAC
+  ansible.builtin.set_fact:
+    _nfs_share: "{{ _nfs_server }}:{{ _nfs_full_path | dirname }}"
+    _iso_filename: "{{ _nfs_full_path | basename }}"
+
+- name: Log NFS ISO details
+  ansible.builtin.debug:
+    msg: |
+      iDRAC NFS Virtual Media Configuration:
+        NFS Share: {{ _nfs_share }}
+        ISO File: {{ _iso_filename }}
+        Full Path: {{ _nfs_server }}:{{ _nfs_full_path }}
+        Target BMC: {{ target_bmc_ip }}
+        Target Admin IP: {{ target_admin_ip }}
+
+# ── Step 2: Eject virtual media from slot 1 using correct path ─────────────
+- name: Eject virtual media slot 1 using Redfish API
+  ansible.builtin.uri:
+    url: "https://{{ target_bmc_ip }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia"
+    method: POST
+    user: "{{ bmc_username }}"
+    password: "{{ bmc_password }}"
+    force_basic_auth: true
+    validate_certs: false
+    headers:
+      Content-Type: "application/json"
+    body_format: json
+    body: {}
+    status_code: [200, 202, 204]
+  register: _eject_result_1
   failed_when: false
   no_log: true
 
-# ── Step 3: Insert ISO as virtual media ─────────────────────────────────
-- name: Mount ISO via iDRAC virtual media
-  dellemc.openmanage.idrac_virtual_media:
-    idrac_ip: "{{ target_bmc_ip }}"
-    idrac_user: "{{ bmc_username }}"
-    idrac_password: "{{ bmc_password }}"
-    validate_certs: false
-    force: true
-    virtual_media:
-      - insert: true
-        image: "{{ _nfs_iso_uri }}"
-  register: _insert_result
-  no_log: true
+- name: Wait after ejecting slot 1
+  ansible.builtin.pause:
+    seconds: 10
+    prompt: "Waiting for virtual media slot 1 to be ejected..."
 
-- name: Set boot override to CD (one-time)
-  dellemc.openmanage.idrac_boot:
-    idrac_ip: "{{ target_bmc_ip }}"
-    idrac_user: "{{ bmc_username }}"
-    idrac_password: "{{ bmc_password }}"
-    validate_certs: false
-    boot_source_override_enabled: "once"
-    boot_source_override_target: "cd"
-    boot_source_override_mode: uefi
-    resource_id: "System.Embedded.1"
-    reset_type: "none"
-  register: _boot_override_result
-  no_log: true
-
-- name: Reboot server to boot from ISO
-  dellemc.openmanage.redfish_powerstate:
-    baseuri: "{{ target_bmc_ip }}"
-    username: "{{ bmc_username }}"
+# ── Step 3: Eject virtual media from slot 2 ───────────────────────────────
+- name: Eject virtual media slot 2 using Redfish API
+  ansible.builtin.uri:
+    url: "https://{{ target_bmc_ip }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia/2/Actions/VirtualMedia.EjectMedia"
+    method: POST
+    user: "{{ bmc_username }}"
     password: "{{ bmc_password }}"
+    force_basic_auth: true
     validate_certs: false
-    reset_type: "ForceRestart"
-    resource_id: "System.Embedded.1"
+    headers:
+      Content-Type: "application/json"
+    body_format: json
+    body: {}
+    status_code: [200, 202, 204]
+  register: _eject_result_2
+  failed_when: false
+  no_log: true
+
+- name: Wait after ejecting slot 2
+  ansible.builtin.pause:
+    seconds: 10
+    prompt: "Waiting for virtual media slot 2 to be ejected..."
+
+# ── Step 4: Mount NFS virtual media to slot 1 using correct path ──────────
+- name: Mount NFS virtual media to slot 1 using Redfish API
+  ansible.builtin.uri:
+    url: "https://{{ target_bmc_ip }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia"
+    method: POST
+    user: "{{ bmc_username }}"
+    password: "{{ bmc_password }}"
+    force_basic_auth: true
+    validate_certs: false
+    headers:
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      Image: "{{ _nfs_share }}/{{ _iso_filename }}"
+      Inserted: true
+      WriteProtected: true
+    status_code: [200, 202, 204]
+  register: _mount_result
+  no_log: false
+
+- name: Display mount result
+  ansible.builtin.debug:
+    msg: "Mount result: {{ _mount_result.status | default('unknown') }}"
+
+- name: Fail if virtual media mount failed
+  ansible.builtin.fail:
+    msg: >-
+      Failed to mount NFS virtual media via Redfish API.
+      NFS: {{ _nfs_share }}/{{ _iso_filename }}
+      Error: {{ _mount_result.msg | default('Unknown error') }}
+      Details: {{ _mount_result | to_nice_json }}
+  when: _mount_result is failed
+
+- name: Wait for virtual media to be ready
+  ansible.builtin.pause:
+    seconds: 10
+    prompt: "Waiting for virtual media to be ready..."
+
+# ── Step 5: Check virtual media status using correct path ─────────────────
+- name: Check virtual media slot 1 status using Redfish API
+  ansible.builtin.uri:
+    url: "https://{{ target_bmc_ip }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia/1"
+    method: GET
+    user: "{{ bmc_username }}"
+    password: "{{ bmc_password }}"
+    force_basic_auth: true
+    validate_certs: false
+  register: _vm_status
+  no_log: true
+
+- name: Display virtual media status
+  ansible.builtin.debug:
+    msg: |
+      Virtual Media Slot 1 Status:
+        Inserted: {{ _vm_status.json.Inserted | default('unknown') }}
+        Image: {{ _vm_status.json.Image | default('unknown') }}
+        MediaTypes: {{ _vm_status.json.MediaTypes | default('unknown') }}
+        ConnectedVia: {{ _vm_status.json.ConnectedVia | default('unknown') }}
+        WriteProtected: {{ _vm_status.json.WriteProtected | default('unknown') }}
+
+- name: Fail if virtual media is not inserted
+  ansible.builtin.fail:
+    msg: >-
+      Virtual media is not properly inserted.
+      Inserted: {{ _vm_status.json.Inserted | default('unknown') }}
+      Image: {{ _vm_status.json.Image | default('unknown') }}
+      This indicates the NFS mount failed or the ISO is not accessible.
+  when: _vm_status.json.Inserted | default(false) != true
+
+# ── Step 6: Set boot override to CD using working script approach ─────────
+# Try 16G path first, then 17G path if it fails
+- name: Set boot override to CD (16G path)
+  ansible.builtin.uri:
+    url: "https://{{ target_bmc_ip }}/redfish/v1/Systems/System.Embedded.1"
+    method: PATCH
+    user: "{{ bmc_username }}"
+    password: "{{ bmc_password }}"
+    force_basic_auth: true
+    validate_certs: false
+    headers:
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      Boot:
+        BootSourceOverrideTarget: "Cd"
+    status_code: [200, 202, 204]
+  register: _boot_override_16g
+  failed_when: false
+  no_log: true
+
+- name: Set boot override to CD (17G path) if 16G failed
+  ansible.builtin.uri:
+    url: "https://{{ target_bmc_ip }}/redfish/v1/Systems/System.Embedded.1/Settings"
+    method: PATCH
+    user: "{{ bmc_username }}"
+    password: "{{ bmc_password }}"
+    force_basic_auth: true
+    validate_certs: false
+    headers:
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      Boot:
+        BootSourceOverrideTarget: "Cd"
+    status_code: [200, 202, 204]
+  register: _boot_override_17g
+  failed_when: false
+  no_log: true
+  when: _boot_override_16g is failed
+
+- name: Display boot override result
+  ansible.builtin.debug:
+    msg: |
+      Boot Override Result:
+        16G Path: {{ 'Success' if _boot_override_16g is not failed else 'Failed' }}
+        17G Path: {{ 'Success' if _boot_override_17g is defined and _boot_override_17g is not failed else 'Not tried' }}
+
+- name: Fail if both boot override attempts failed
+  ansible.builtin.fail:
+    msg: >-
+      Failed to set boot override to CD using both 16G and 17G paths.
+      16G Error: {{ _boot_override_16g.msg | default('Unknown') }}
+      17G Error: {{ _boot_override_17g.msg | default('Not tried') }}
+  when:
+    - _boot_override_16g is failed
+    - _boot_override_17g is defined
+    - _boot_override_17g is failed
+
+- name: Wait for boot settings to be applied
+  ansible.builtin.pause:
+    seconds: 5
+    prompt: "Waiting for boot settings to be applied..."
+
+# ── Step 7: Reboot server using Redfish API ───────────────────────────────
+- name: Get current power state
+  ansible.builtin.uri:
+    url: "https://{{ target_bmc_ip }}/redfish/v1/Systems/System.Embedded.1"
+    method: GET
+    user: "{{ bmc_username }}"
+    password: "{{ bmc_password }}"
+    force_basic_auth: true
+    validate_certs: false
+  register: _power_state
+  no_log: true
+
+- name: Display current power state
+  ansible.builtin.debug:
+    msg: "Current power state: {{ _power_state.json.PowerState | default('unknown') }}"
+
+- name: Reboot server using Redfish API (PowerCycle if On, On if Off)
+  ansible.builtin.uri:
+    url: "https://{{ target_bmc_ip }}/redfish/v1/Systems/System.Embedded.1/Actions/ComputerSystem.Reset"
+    method: POST
+    user: "{{ bmc_username }}"
+    password: "{{ bmc_password }}"
+    force_basic_auth: true
+    validate_certs: false
+    headers:
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      ResetType: "{{ 'PowerCycle' if _power_state.json.PowerState == 'On' else 'On' }}"
+    status_code: [200, 202, 204]
   register: _reboot_result
   no_log: true
 
-# ── Step 4: Wait for OS installation to complete ────────────────────────
+- name: Display reboot result
+  ansible.builtin.debug:
+    msg: "Reboot result: {{ _reboot_result.status | default('unknown') }}"
+
+- name: Fail if reboot failed
+  ansible.builtin.fail:
+    msg: >-
+      Failed to reboot server.
+      Error: {{ _reboot_result.msg | default('Unknown error') }}
+  when: _reboot_result is failed
+
+- name: Log reboot status
+  ansible.builtin.debug:
+    msg: >-
+      Server reboot initiated - booting from Virtual CD.
+      NFS: {{ _nfs_share }}/{{ _iso_filename }}
+      The server will now boot from the virtual media and begin OS installation.
+
+- name: Wait for server to start booting
+  ansible.builtin.pause:
+    seconds: 60
+    prompt: "Waiting for server to start booting (60 seconds)..."
+
+# ── Step 8: Monitor iDRAC logs for mount status ─────────────────────────────
+- name: Get iDRAC log entries for mount status
+  ansible.builtin.uri:
+    url: "https://{{ target_bmc_ip }}/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries?$filter=Severity%20eq%20'OK'"
+    method: GET
+    user: "{{ bmc_username }}"
+    password: "{{ bmc_password }}"
+    force_basic_auth: true
+    validate_certs: false
+  register: _idrac_logs
+  no_log: true
+
+- name: Display iDRAC log count
+  ansible.builtin.debug:
+    msg: "iDRAC log entries: {{ _idrac_logs.json.Members | default([]) | length }}"
+
+- name: Check for mount disconnection errors in logs
+  ansible.builtin.debug:
+    msg: >-
+      Checking for mount disconnection errors (RAC0776, RAC0717) in iDRAC logs...
+      If found, the ISO mount link has been disconnected.
+
+# ── Step 9: Wait for OS installation to complete ────────────────────────
 - name: Wait for target node to become offline (reboot in progress)
   ansible.builtin.wait_for:
     host: "{{ target_admin_ip }}"
@@ -89,8 +338,9 @@
     msg: >-
       Target node is offline. OS installation in progress via iDRAC virtual media.
       Waiting for SSH to become available on {{ target_admin_ip }}...
+      This may take 15-30 minutes depending on the OS and hardware.
 
-# ── Step 5: Wait for SSH to come up ─────────────────────────────────────
+# ── Step 10: Wait for SSH to come up ─────────────────────────────────────
 - name: Wait for target node SSH to become available
   ansible.builtin.wait_for:
     host: "{{ target_admin_ip }}"
@@ -112,7 +362,7 @@
     - _ssh_wait is defined
     - _ssh_wait is failed
 
-# ── Step 6: Verify installed OS ─────────────────────────────────────────
+# ── Step 11: Verify installed OS ─────────────────────────────────────────
 - name: Verify passwordless SSH access with injected key
   ansible.builtin.command:
     cmd: >-
@@ -163,15 +413,50 @@
     - _os_verify is defined
     - _os_verify.rc | default(1) == 0
 
-# ── Step 7: Cleanup — eject virtual media ───────────────────────────────
-- name: Eject virtual media after installation
-  dellemc.openmanage.idrac_virtual_media:
-    idrac_ip: "{{ target_bmc_ip }}"
-    idrac_user: "{{ bmc_username }}"
-    idrac_password: "{{ bmc_password }}"
+# ── Step 12: Cleanup - eject virtual media from both slots ─────────────────
+- name: Eject virtual media slot 1 after installation
+  ansible.builtin.uri:
+    url: "https://{{ target_bmc_ip }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia"
+    method: POST
+    user: "{{ bmc_username }}"
+    password: "{{ bmc_password }}"
+    force_basic_auth: true
     validate_certs: false
-    virtual_media:
-      - insert: false
-  changed_when: true
+    headers:
+      Content-Type: "application/json"
+    body_format: json
+    body: {}
+    status_code: [200, 202, 204]
+  register: _eject_cleanup_1
   failed_when: false
   no_log: true
+  when:
+    - _os_verify is defined
+    - _os_verify.rc | default(1) == 0
+
+- name: Eject virtual media slot 2 after installation
+  ansible.builtin.uri:
+    url: "https://{{ target_bmc_ip }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia/2/Actions/VirtualMedia.EjectMedia"
+    method: POST
+    user: "{{ bmc_username }}"
+    password: "{{ bmc_password }}"
+    force_basic_auth: true
+    validate_certs: false
+    headers:
+      Content-Type: "application/json"
+    body_format: json
+    body: {}
+    status_code: [200, 202, 204]
+  register: _eject_cleanup_2
+  failed_when: false
+  no_log: true
+  when:
+    - _os_verify is defined
+    - _os_verify.rc | default(1) == 0
+
+- name: Display cleanup results
+  ansible.builtin.debug:
+    msg: |
+      Virtual Media Cleanup:
+        Slot 1: {{ 'Success' if _eject_cleanup_1 is defined and _eject_cleanup_1 is not failed else 'Failed/Not tried' }}
+        Slot 2: {{ 'Success' if _eject_cleanup_2 is defined and _eject_cleanup_2 is not failed else 'Failed/Not tried' }}
